@@ -1,0 +1,93 @@
+﻿CREATOR HUB 0.13.0 — VIDEÓ-UTÓMUNKA ÉS KÖZÖS ELŐZMÉNYEK
+2026-11-18
+
+INDÍTÁS
+Ha jelenleg generálsz, várd meg a munka végét. Ezután indítsd ugyanazt a
+START_CREATOR_HUB.cmd fájlt, majd a böngészőben Ctrl+F5. A fejléc: 0.13.0.
+Az indító foglalt feladatsor mellett nem állítja le a régi Hubot vagy ComfyUI-t.
+A személyes adatok, eredeti fájlok és H3 gyorsítási beállítások megmaradnak.
+
+HOL TALÁLOD?
+A kész videó alatt: Feljavítás | Hang | Összehasonlítás | Véglegesítés.
+Előzmények: jelöld ki a kívánt eredményeket, majd Utómunka vagy Összehasonlítás.
+Műhely / Videóműhely: a Videójavító az Előzményekhez vezet.
+A régi idővonalas szerkesztő neve Vágóasztal · Videóstúdió; a videó alatti
+Továbbiak menüben és a Műhelyben is elérhető. A Loop Lab külön megmaradt.
+
+GYORS ÉS EGYÉRTELMŰ MUNKAMENET
+1. Válassz kész videót. A megnyitás önmagában nem indít feldolgozást.
+2. Feljavítás: külön FPS-simítás és külön 1,5x / 2x képméret. Alapból 2x FPS,
+   nagyítás kikapcsolva. A kettő egymástól független.
+3. Előbb kérhetsz 0,5–4 másodperces rövid próbát, alapból 3 másodpercet.
+   Összeállításnál az első két snitt vágás körüli részéből készül a próba.
+4. A Teljes feldolgozás külön gomb. A próbát nem folytatja automatikusan.
+5. A közös Sor gomb és a fő előnézet mutatja a munkát. A nagy GPU-feladatok
+   sorban futnak, célzott leállítással; másik alkalmazás munkáját nem szakítja meg.
+
+MEGLÉVŐ MOTOROK, KÍMÉLŐ MŰKÖDÉS
+RIFE 4.7 és a már telepített Prophetero Video Interpolator, valamint a meglévő
+upscaler-modell szükséges a GPU-s javításhoz. Nincs automatikus modellletöltés.
+Kis memórián 2x FPS választható; a 4x mód nem engedélyezett. A felskálázott kép
+kímélő módban legfeljebb 4 megapixel. Kis kötegek/csempék és a közös memória-
+beállítás csökkentik a terhelést. A generálás sebességét az utómunka nem javítja.
+Az interpoláció és felskálázás hibázhat, valódi részleteket nem garantál.
+
+HANG
+Hangerő, EBU R128 normalizálás, időeltolás, fel-/lekeverés, limiter, némítás,
+illetve másik kijelölt videó hangjának átvétele. A teljes hangjavítás ellenőrzi,
+hogy a kódolt képsáv változatlan maradt. Az AAC-hang újrakódolódik. A rövid
+próba kivágott képe újrakódolódik. Kizárólag hanghoz nem tölt H3/LTX modellt.
+Részletes szakaszjavítás: Továbbiak / Hangjavítás · Audio Fix.
+
+ÖSSZEHASONLÍTÁS ÉS ÖSSZEÁLLÍTÁS
+Előzményekben 2–4 kész kép/videó kijelölése: közös indítás, lassítás, ismétlés.
+Két azonos típusú eredménynél A/B választóvonal. Eltérő FPS-nél a közös lejátszás
+időalapú, nem garantált képkockapontos szinkron. A kedvencjelölés és 1–5 értékelés
+közös az Előzményekkel. Külön kép- és hangnyertes választható, majd átadható a
+Hang lapnak. A haladó Take Compare külön, kifejezett gombbal nyílik meg.
+Snittek összeállítása: kijelölés / Csoportos műveletek. A sorrend nyilakkal
+állítható. Az első snitt méretéhez és FPS-éhez illeszt; nem nyújt, szükség esetén
+sávokat ad hozzá. Kímélő módban legfeljebb 4, nagy módban 12 snitt. Újrakódol.
+
+VÁLTOZATOK ÉS RECEPTEK
+A javított videó új fájl, az eredeti megmarad. Az Előzmények változatgombja
+megmutatja az eredetit és a hozzá kapcsolt változatokat. A Loop Lab és a Hub
+képszerkesztő forráskapcsolatai is megjelennek, ha az eredeti azonosító mentve volt.
+Kapcsolódó változatok együtt: családonként egy kártya, a véglegesnek jelölt előnyben.
+A véglegesjelölés a többi változatot megőrzi. A menthető utómunka-recept csak a
+műveleteket tárolja; a forrásokat és hangdonort újra kiválasztod. A .finish.json
+leírás és a Hub-napló megőrzi a feldolgozás receptjét és forráskapcsolatait.
+A külső, külön megnyitott műhelyek minden exportja még nem kerül automatikusan
+vissza a Hub előzményeibe. A natív Utómunka útvonal eredményei igen.
+
+MENTÉSI HELY
+A közös kimeneten belül: Videos / ÉÉÉÉ-HH-NN / Valtozat_....mp4.
+A rövid próbák: Videos / ÉÉÉÉ-HH-NN / Previews / Proba_....mp4; a normál
+Előzményekből kimaradnak. A fő eredménynézetben megtekinthetők és törölhetők.
+A feldolgozás átmeneti Work fájljai rendes befejezéskor törlődnek. Bizonytalan
+GPU-kapcsolatnál megmaradnak; a rendszer nem küldi be vakon újra a feladatot.
+Elsősorban MP4/H.264/AAC videókkal ellenőrizve; a külső motorok saját korlátai
+is érvényesek. Nem támogatott formátumot nem alakít át észrevétlenül.
+
+CSOPORTOS RENDEZÉS ÉS TAKARÍTÁS
+Jelölőnégyzetek, Shift-kattintásos tartomány, oldal kijelölése vagy szűrt találatok
+kijelölése legfeljebb 200 fájlig. Értékelés, kedvenc, kategória, lomtár,
+visszaállítás és végleges törlés. Szűrőváltás törli a kijelölést.
+Megszakított / hiányos eredmények: külön szűrő, alapból nincsenek a kész galériában.
+Nem törlődnek automatikusan, mert egy megszakított futás eredménye használható is
+lehet. Kijelölve, külön megerősítéssel véglegesen törölhetők. Kész eredményt előbb
+a Hub lomtárába kell helyezni. A végleges törlés nem vonható vissza; aktív feladat
+fájljait a program védi. A többi változatot és a forrásképeket nem törli együtt.
+Explorer: a tényleges, látható mappaablakot ellenőrzi, Windows 11-es lapokat és
+eltérő junction-útvonalakat is kezel. Ez a saját Windows-asztalon futó indítóval
+használható; távoli/szolgáltatásként indított szerver nem tud helyi ablakot megjeleníteni.
+
+VÉGSŐ ELLENŐRZÉS
+A meglévő videó külön megnyitható Final Checkben; feldolgozás után opcionálisan
+CPU-s ellenőrzés is kérhető. Sötét/mozdulatlan rész, csend és hangcsúcs jelzésére
+való; nem anatómiai, esztétikai vagy általános MI-minőségbiztosítás.
+
+KÖVETKEZŐ KÜLÖN KÖR
+Kulcsképes Scene Planner-idővonal, minden külső műhely exportjának automatikus
+visszaadása, egységes haladó próbasorozatok és generatív hang/szájszinkron.
+Ezeket ez a kiadás nem állítja kész funkciónak.

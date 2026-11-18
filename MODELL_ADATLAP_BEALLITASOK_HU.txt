@@ -1,0 +1,68 @@
+﻿CREATOR HUB 0.13.2 — MODELLADATLAP ALAPÚ BEÁLLÍTÁSOK
+2026-11-18
+
+ALAPMÓD: MODELL ADATLAPJA ALAPJÁN
+A Generálási beállítások alatt új választó található. Alapból a kiválasztott
+modell konkrét adatlapján található értékek kerülnek be modellváltáskor.
+Ez nem a teljes modellcsalád egységes, fix alapértékét jelenti.
+Az adatlapos profil az ott talált, elérhető sampler/scheduler értéket is átveszi.
+Utána minden mezőt kézzel módosíthatsz. Újabb modellválasztáskor ismét az
+adatlapos profil az irányadó, ha ebben a módban maradsz.
+
+SAJÁT ÉRTÉKEK MEGTARTÁSA
+A másik mód megőrzi a lépésszámot, CFG-t, denoise-t és guidance-t. A sampler és
+scheduler megőrző pipái ilyenkor — illetve egyértelmű adatlap hiányában — érvényesek.
+A korábbi javítás csak a külön mentett lépésszámot őrizte biztosan; a CFG-t és
+forrásadatból megjelenített értékeket modellváltáskor elveszíthette. Ez javítva.
+Teljesen új, beállítás nélküli tervnél az első modell alapértékei használhatók;
+a még letiltott, általános helyőrző értékek nem írják felül például a Turbo H3-at.
+
+FORRÁS ÉS PONTOSSÁG
+Elsősorban a helyi .cm-info.json / .civitai.info fájl verzióazonosítóját és
+SHA256-adatát használja a pontos Civitai-modellverzió adatlapjának kiválasztására.
+A társított metaadat fájlazonosítóját összeveti az adatlap fájllistájával.
+A több gigabájtos modellt nem olvassa végig újra csak egy modellváltás miatt.
+A helyi InferenceDefaults / recommendedSettings strukturált értékeit is kezeli.
+Nem találomra olvas ki számokat egy tetszőleges leírásból vagy fájlnévből.
+Ha nincs külön publikált beállítás, az adatlap legfeljebb 24 példáját vizsgálja.
+Egy mezőhöz legalább három, legalább 75%-ban egyező adat kell, és az eltérő
+modellhashű példákat kizárja. A felirat ilyenkor pontosan jelzi:
+„Az adatlap példaképeinek beállításai”. Ez példaadat, nem minőségi garancia.
+
+A támogatott mezők: lépésszám, CFG, sampler, scheduler, valamint explicit
+megadás esetén denoise/guidance. Csak a motorban elérhető sampler/scheduler
+alkalmazható. Ha valamelyik hiányzik, jelzi; nem cseréli ki észrevétlenül másra.
+Az adatlap egyéb workflow-beállításait (pl. shift, SLG, LoRA-k) nem állítja át.
+A saját prompt, seed, LoRA-k, kép, felbontás és darabszám változatlan marad.
+
+A TE MOSS-VÁLTOZATOD
+MOSS IMAGINIX FP8 v1.0 — Civitai modell 3052285, verzió 3471307.
+Az adatlap és a helyi társított adat fájlazonosítója egyezett:
+081682bc564101367eb811c699ffacF305a21d73e8a33155bbd851c0923d4c3f
+Az adatlap tíz példája: 6 lépés, CFG 1, ER SDE sampler, Simple scheduler.
+Ezért ennél a konkrét fájlnál nem az általános MOSS 50 / CFG 3 az irányadó.
+Forrás: https://civitai.com/api/v1/model-versions/3471307
+Modelloldal: https://civitai.com/models/3052285?modelVersionId=3471307
+
+SEBESSÉG ÉS KAPCSOLAT
+Az értékeket a Hub data/model-recommendations.json fájlja tárolja. Modellváltáskor
+nem tölti le újra ugyanazt az adatlapot hét napig; az Adatlap frissítése gombbal
+bármikor újra ellenőrizhető. Meglévő mentés mellett offline is használható.
+Csak a kiválasztott modellre kér le adatot; a teljes készlet böngészésekor nem
+indít több száz internetes lekérést. A generálás indítása nem tölt adatlapot.
+Nem menti el a példaképeket és promptjaikat. Modellt nem tölt le és nem generál.
+Ha nincs megbízható forrás vagy nem olvasható az adatlap, a saját értékek maradnak.
+Hugging Face- és szabad szöveges adatlapok általános értelmezése nem része ennek
+az első, strukturált Civitai/helyi metaadatot használó megoldásnak.
+
+AKTIVÁLÁS
+A futó munkák után indítsd újra a Hubot ugyanazzal a START_CREATOR_HUB.cmd
+indítóval, majd Ctrl+F5. A fejlécben 0.13.2 legyen. A Generálási beállítások alatt
+Modell adatlapja alapján · automatikus legyen kiválasztva. Válaszd ki újra a MOSS-t.
+
+ELLENŐRZÉS
+161 automatizált teszt sikeres. Böngészős próba: Krea2 -> MOSS váltásnál
+6 / CFG 1 / ER SDE / Simple jelent meg, és ugyanaz került a ténylegesen
+összeállított generáló gráfba. Saját módban a 8 / CFG 1,6 megmaradt a
+modellváltások és újratöltés után; visszaváltva az adatlapos mód ismét 6 / 1-et adott.
+A próbák nem indítottak GPU-generálást.

@@ -1,0 +1,50 @@
+﻿CREATOR HUB 0.13.1 — PROMPT STUDIO HELYI MI-INDÍTÁS
+2026-11-18
+
+JAVÍTÁS
+A Hub Műhely / Prompt Studio megnyitásakor a Hub ellenőrzi az Ollamát.
+- A már futó szolgáltatást és a saját modellkönyvtárát újrahasználja.
+- Ha nem fut, megkeresi a meglévő telepítést, és rejtett háttérfolyamatként indítja.
+- Felismeri a verziózott hordozható telepítést, a Windows telepített Ollamáját
+  és a PATH-on szereplő példányt. Nincs géphez kötött E: meghajtós indítóigény.
+- A felhasználó saját OLLAMA_MODELS beállítása elsőbbséget élvez. Egyébként
+  a megtalált hordozható példány saját models könyvtára használható.
+- A felületen látható az ellenőrzés, indítás és a használatra kész állapot.
+- Nincs második példány, ha az Ollama már fut. Foglalt, hibásan válaszoló címnél
+  konkrét tájékoztatást ad. Két egyszerre megnyitott Studio sem indít két Ollamát.
+- Hiányzó Ollama és üres helyi modellkönyvtár külön állapot. A kézi/külső MI-s
+  Prompt Studio eszközöket ettől még megnyitja. A telepítési útmutató a Studio
+  Helyi MI beállítása részében érhető el; telepítés és letöltés nem automatikus.
+- Későbbi megnyitáskor újra ellenőrzi az MI-t, akkor is, ha a Studio már nyitva van.
+
+TERHELÉS ÉS ADATOK
+Az indulás csak az Ollama szolgáltatását és a helyi modelllistát ellenőrzi.
+Nem futtat promptot, nem tölt be modellt, és nem indít letöltést. Így a Hub
+megnyitása önmagában nem foglalja el a GPU-t egy nyelvi modellel.
+Az újonnan indított példány csak a helyi címen figyel, felhős modellt nem használ,
+és egyszerre egy MI-kérést dolgoz fel. Már futó Ollama beállításait nem írja át.
+Az indítási napló a Hub data/logs/ollama.*.log fájljaiba kerül. A Szerver nézet
+másolható diagnosztikája a helyi MI állapotát és a napló végét is tartalmazza.
+
+FELÜLET
+A Hubhoz csomagolt Prompt Studio MI-paneljének három választója felül egy
+vonalban, normál magasságban marad hosszabb hibaüzenetnél is. Üres lista esetén
+érthető helyőrző látható. A panel bezárása nem törli a megkezdett kérést.
+A külön, régi E: meghajtós Studio felületfájljait ez a javítás nem cseréli le.
+A Hub annak az MI-kapcsolatát is helyreállítja, ha a már futó Studiót használja.
+
+AKTIVÁLÁS
+A futó munkák után indítsd újra a Hubot a megszokott START_CREATOR_HUB.cmd
+indítóval, majd Ctrl+F5. A fejlécben 0.13.1 jelenjen meg.
+Ezután a Műhely / Prompt Studio megnyitásához nem kell előbb külön az
+Ollamás asztali parancsikont elindítani. A már meglévő indító továbbra is működik.
+
+ELLENŐRZÉS
+155 automatikus teszt sikeres. A leállított szolgáltatás indítása és a
+párhuzamos nyitás szimulált folyamattal tesztelve: egy indítás, meglévő
+modellkönyvtár, rejtett ablak, nincs letöltés vagy modellfuttatás.
+A böngészős próba ellenőrizte az indítási/használatra kész/üresmodell-állapotot,
+a megnyitott Studio ismételt ellenőrzését és azt, hogy nem jelenik meg zavaró
+hibamodál egy hiányzó modell miatt. A panel 560 px szélességen is ellenőrzött,
+a munka panelbezárás után megmarad. A saját gépen a futó Ollama és a Prompt
+Studio ugyanazt a négy helyi modellt látja. Éles MI-generálást nem indítottunk.

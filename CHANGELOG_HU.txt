@@ -1,0 +1,19 @@
+﻿ARTOFTOMWORKS CREATOR HUB GLOBAL — 0.14.0 NYILVÁNOS BÉTA
+2026. november 18.
+
+Az első Global csomag a Prompt Studio teljes nyelvkészletével:
+HU, EN, DE, FR, ES, IT, PT, PL. Megjegyzett nyelv, élő nyelvváltás,
+lefordított főfelület, képszerkesztő, Loop Lab és pózeszköz. A promptok és
+beállítások változatlanok. Technikai diagnosztikánál angol tartaléknyelv;
+külső eszközök üzenetei eredeti nyelven maradhatnak.
+
+Tartalmazza a 0.13-as fejlesztéseket: helyi MI-segítő, választható 9B modell,
+alkotói receptek külön alkalmazással, modelladatlap-ajánlások, tartós csoportos
+végleges törlés, kép/videó előzmények, utómunkák, motorkezelés és látható futás.
+
+Tiszta Windows x64 csomag hordozható Node.js-szel, angol/magyar kezdő
+leírással és megtartott külső licencekkel. Személyes munkatár nincs benne.
+A generatív modellek és a ComfyUI külön telepítést igényelnek.
+
+Nyilvános béta: az automatikus támogatás a dokumentált modellágakra vonatkozik.
+Nem ígér minden hardverre, node-ra és kvantálásra általános kompatibilitást.

@@ -1,0 +1,27 @@
+CREATOR HUB 0.13.3 — KIJELÖLT EREDMÉNYEK VÉGLEGES TÖRLÉSE
+2026-11-18
+
+Az Előzményekben kijelölt eredmények véglegesen törölhetők a megerősítés után,
+közvetlenül és a Hub lomtárából is. Nem szükséges előbb a lomtárba helyezni őket.
+Ez a művelet nem vonható vissza.
+
+A tényleges fájltörlés és a már hiányzó fájlok bejegyzéseinek eltávolítása külön
+visszajelzést kap. A törölt eredmények teljes újratöltés után sem térnek vissza
+az Előzményekben vagy a legutóbbi sorozat bélyegképei között.
+
+Törlés közben látható a folyamat és a gombok nem indítanak párhuzamos műveletet.
+Ha valamelyik fájl nem törölhető, kijelölve marad, a részletes hiba megjelenik.
+Egy hibás elem nem akadályozza a többi kijelölt fájl törlését.
+A futó generálás vagy utómunka által használt eredmény a munka végéig védett.
+Nem ellenőrizhető mentési hely esetén a program hibát jelez.
+
+AKTIVÁLÁS
+A futó munka után indítsd el ugyanazt a START_CREATOR_HUB.cmd indítót,
+majd a böngészőben Ctrl+F5. A háttér verziója 0.13.3 legyen.
+A Ctrl+F5 önmagában nem frissíti a már futó helyi szervert.
+
+ELLENŐRZÉS
+164 automatikus ellenőrzés sikeres. Elkülönített böngészős próbákon ellenőrizve:
+tényleges fájltörlés; teljes újratöltés utáni állapot; megszakított eredmény;
+aktív fájl védelme; részleges hiba és megmaradó kijelölés; régi háttér jelzése.
+A próbák saját tesztfájlokat használtak; személyes eredmények nem törlődtek.

@@ -1,0 +1,46 @@
+CREATOR HUB 0.13.4 — ALKOTÓI RECEPTEK
+2026-11-18
+
+HOL TALÁLOD?
+Az Alkotás panel tetején, a modellválasztó fölött: Alkotói receptek.
+
+MENTÉS
+1. Válassz modellt, állítsd be a LoRA-kat, erősségeiket és a generálási értékeket.
+2. Nyisd meg az Alkotói receptek panelt, adj nevet, majd Aktuális recept mentése.
+3. A kezdőkép mentése külön választható. Alapból nem kerül bele a receptbe.
+
+Mit őriz: képes/videós mód, modell és workflow, LoRA-k állapota és erősségei,
+méret, lépésszám, CFG, sampler, scheduler, darabszám, seed és léptetés,
+promptok, videóhossz, kamerabeállítások és az adott terv további vezérlései.
+A memória üzemmód a Hub közös beállítása marad.
+
+ALKALMAZÁS
+Válassz a mentett listából. Alatta áttekintheted a modellt, LoRA-kat, méretet,
+mintavételezést, seedet és videónál a mozgást. A Mentett promptok lenyitható.
+A promptok, seed és kezdőkép átvétele külön pipálható; alapból az aktuálisak
+maradnak. A Recept alkalmazása a többi mentett beállítást átveszi.
+Generálás nem indul automatikusan. A ↶ gombbal visszavonható az átvétel.
+
+Hiányzó automatikus modell vagy bekapcsolt, nem használható LoRA esetén
+a Hub jelzi a problémát és visszaállítja a korábbi munkabeállításokat.
+Saját workflow-nál a megszokott indítás előtti ellenőrzés is szükséges;
+azonos fájlnév önmagában nem bizonyítja azonos modellverzió jelenlétét.
+
+TÁROLÁS
+A listát a helyi Hub piszkozata megőrzi; a Projekt mentése is tartalmazza.
+Külön projekt betöltése annak saját mentett listáját is behozhatja.
+Legfeljebb 30 recept menthető. Nagy kezdőképeknél méretkorlát van;
+hosszú távú biztonsági másolathoz ments projektfájlt.
+Azonos név felülírása megerősítést kér. A Törlés a listából csak a receptet
+távolítja el; kép, videó vagy modellfájl nem törlődik.
+Mentési hiba esetén nem írja ki tévesen, hogy a recept elmentve.
+
+FRISSÍTÉS
+A futó generálás után ugyanaz a START_CREATOR_HUB.cmd indító, majd Ctrl+F5.
+A frissített háttér verziója: 0.13.4.
+
+ELLENŐRZÉS
+167 automatikus ellenőrzés és elkülönített böngészős próbák sikeresek.
+Mentés üres listába; újratöltés; szelektív alkalmazás; visszavonás; felülírás;
+mentési hiba; hiányzó aktív LoRA; recept törlése; korábbi stúdiófunkciók.
+A receptpróba nem indított generálást. DeepSeek-modellt nem telepítettünk.

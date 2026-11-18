@@ -1,0 +1,10 @@
+﻿ARTOFTOMWORKS CREATOR HUB GLOBAL 0.14.0
+
+Extract the entire Windows ZIP. Run START_CREATOR_HUB.cmd.
+Keep its server window open. Existing ComfyUI, Python environment,
+models and required nodes are needed. SwarmUI is not required.
+Choose the interface language with the globe selector.
+
+First try: Image, one ready supported model, count 1, a modest size.
+For full instructions, output paths and limitations: README_EN.txt.
+Free creative use, including commercial output: see LICENSE.txt.

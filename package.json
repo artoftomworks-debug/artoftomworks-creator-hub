@@ -1,0 +1,15 @@
+{
+  "name": "artoftomworks-creator-hub",
+  "version": "0.14.0",
+  "private": true,
+  "type": "module",
+  "description": "Local image and video workspace powered by ComfyUI",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node server.mjs --open",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "license": "SEE LICENSE IN LICENSE.txt"
+}

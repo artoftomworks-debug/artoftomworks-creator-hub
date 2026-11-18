@@ -1,0 +1,9 @@
+data/
+runtime/
+node_modules/
+**/__pycache__/
+**/.runtime/
+*.log
+.env
+.env.*
+*.part

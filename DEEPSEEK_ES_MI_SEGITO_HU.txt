@@ -1,0 +1,68 @@
+CREATOR HUB 0.13.5 — HELYI MI-SEGÍTŐ ÉS DEEPSEEK
+2026-11-18
+
+HOL TALÁLOD?
+Az Alkotás tetején, az Alkotói receptek mellett: ✦ MI-segítő.
+A Műhelyből és a funkciókeresőből is megnyitható.
+
+HASZNÁLAT
+1. Válassz a Segítőmodell listából. A korábbi gyors helyi modell is megmaradt.
+   A DeepSeek neve itt: DeepSeek / Qwen3.5 · 9B Q4.
+2. Válassz feladatot: prompt finomítása, fordítás, jelenetjavaslat vagy képből prompt.
+3. Válaszd az angol vagy magyar célnyelvet, írd be az ötletedet.
+   Az Aktuális prompt átvétele gombbal újra behozhatod a munkapromptodat.
+4. Javaslat készítése. A válasz készülése, ideje és a futtatás módja látszik.
+5. Másolhatod, vagy a Javaslat alkalmazása gombbal átveheted a pozitív promptba.
+   Ez nem indít kép-/videógenerálást. A negatív promptot nem cseréli.
+
+KÉPBŐL PROMPT
+Tölts be kezdőképet az alkotási felületen, majd jelöld be annak használatát
+a segítőben. A program ellenőrzi, hogy a kiválasztott modell fogad-e képet.
+Sikertelen vagy félbeszakadt válasz automatikusan nem alkalmazható.
+A panel bezárása után az adott lapon megmarad a beírt ötlet és a folyamat.
+Megszakítás gombbal leállíthatod a MI-kérést.
+
+SEBESSÉG ÉS MEMÓRIA
+Az Automatikus mód a szabad videómemória alapján választ GPU-t vagy CPU-t.
+A Modell és teljesítmény részben kézzel is választható. CPU-n a 9B modell
+lényegesen lassabb lehet. A segítő rövid, 4096 tokenes munkakörnyezetet használ.
+A Hub generálás közben nem indít új segítőkérést. A generálás elsőbbséget kap:
+a saját aktív MI-kérését megszakítja, és a modell eltávolítását is ellenőrzi
+a memória átadása előtt. Más alkalmazások saját MI-feladatait nem kezeli.
+
+A HELYI DEEPSEEK-PRÓBA
+Közösségi Qwen3.5-9B alapú, DeepSeek tanítóválaszokkal finomhangolt változat.
+Eredeti adatlap:
+https://huggingface.co/xtools-at/DeepSeek-V4-Pro-Qwen3.5-9B-UNCENSORED-heretic
+Kisebb méretű kiadás:
+https://huggingface.co/Sakura721/DeepSeek-V4-Pro-Qwen3.5-9B-UNCENSORED-heretic-GGUF
+
+Az Ollama az itteni próbán a képfeldolgozó részt is letöltötte: összesen kb. 7 GB.
+Új telepítésnél a Modell és teljesítmény rész DeepSeek hozzáadása gombja kérésre
+letölti; ezt a program külön megerősítteti. A meglévő modelleket nem cseréli le.
+A modellméret nem azonos a teljes futás közbeni memóriaigénnyel.
+
+A 12 GB-os RTX 4080 Laptop GPU-n végzett rövid próbák (betöltéssel és a memória
+felszabadításával együtt):
+                     korábbi 4B segítő    DeepSeek 9B
+Fordítás                    4,9 mp          14,1 mp
+Prompt finomítása           4,7 mp           5,0 mp
+Jelenetjavaslat             6,8 mp           6,4 mp
+
+A DeepSeek a fehér háttéren piros négyzetet és kék kört is helyesen felismerte
+egy saját tesztképen, 6,9 mp alatt. Minden kérés után üres volt az Ollama
+betöltöttmodell-listája. Ezek kis mintás működési próbák, nem általános
+minőségi vagy sebességígéretek. Magyar megfogalmazásban is maradhatnak hibák.
+A DeepSeek választható jelölt; nem cserélte le az alapértelmezett gyors segítőt.
+
+ÜGYNÖK ÉS BETANÍTÁS
+Ez a kész helyi modell bekötése. Később építhetünk rá szerepekkel és eszközökkel
+működő ügynököt; önálló fájlkezelést vagy generálást most nem végez.
+A saját adatokkal történő modellbetanítás külön fejlesztés.
+
+ELLENŐRZÉS ÉS AKTIVÁLÁS
+174 automatikus ellenőrzés sikeres, elkülönített böngészős működéspróbákkal.
+A receptmentés korábbi próbája is sikeres. A valós MI-próba saját tesztszöveget
+és szintetikus tesztképet használt; személyes projektpromptot nem továbbítottunk.
+A futó munka után indítsd el ugyanazt a START_CREATOR_HUB.cmd indítót,
+majd Ctrl+F5 a böngészőben. Az új háttér verziója: 0.13.5.

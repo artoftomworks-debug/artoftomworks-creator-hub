@@ -1,0 +1,14 @@
+{
+  "status": "passed",
+  "checks": [
+    "Live backend recognises all six native nodes",
+    "Both models present in the live backend catalog",
+    "All links, output slots and widget values match installed schemas",
+    "No checkpoint, VAE, CLIP, sampler, diffusion or custom-node dependency",
+    "Installed RealESRGAN x2 loads successfully; synthetic 16x16 RGB CPU input produces finite 32x32 RGB output"
+  ],
+  "not_tested": [
+    "Full-size GPU runtime and visual quality; no generation was queued."
+  ],
+  "cpu_smoke_seconds": 0.332
+}

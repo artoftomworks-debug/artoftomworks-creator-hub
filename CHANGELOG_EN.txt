@@ -1,0 +1,20 @@
+﻿ARTOFTOMWORKS CREATOR HUB GLOBAL — 0.14.0 PUBLIC BETA
+18 November 2026
+
+First Global public package with the full Prompt Studio language set:
+HU, EN, DE, FR, ES, IT, PT and PL. Remembered language, live switching and
+localized core workspace, image editor, Loop Lab and pose tool. Prompts,
+model identifiers and generation settings are preserved. English fallback
+for technical diagnostics; third-party tool messages may retain their language.
+
+Includes the 0.13.x work: local AI assistant and optional 9B model, explicit
+creative-recipe reuse, model-card sampling recommendations, durable batch
+permanent deletion, image/video history, direct finishing tools, engine
+management and visible generation monitoring.
+
+Clean Windows x64 bundle with portable Node.js, English/Hungarian quick-start
+and requirements, preserved third-party notices and no personal workspace.
+Generative model weights and ComfyUI are separate installations.
+
+Public beta: automatic support is limited to documented model branches.
+No universal hardware, custom-node or quantization compatibility is promised.

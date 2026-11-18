@@ -1,0 +1,14 @@
+import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
+import {fileURLToPath} from 'node:url';
+import path from 'node:path';
+const dir=path.dirname(fileURLToPath(import.meta.url));
+const read=n=>readFileSync(path.join(dir,n),'utf8');
+const strip=s=>s.replace(/^import .*;\r?\n/gm,'').replace(/^export /gm,'');
+const engine=strip(read('render-model.mjs'))+'\n'+strip(read('composition-model.mjs'))+'\n'+strip(read('scene-model.mjs'))+'\n'+strip(read('variants-model.mjs'))+'\n'+strip(read('engine.mjs'))+'\n'+strip(read('director-model.mjs'));
+const labels=read('labels.mjs').replace(/^export /gm,'');
+const app=read('app.mjs').replace(/^import .*;\r?\n/gm,'');
+const extra=['extension-labels.mjs','composition-labels.mjs','scene-labels.mjs','variants-labels.mjs','director-labels.mjs','render-labels.mjs','library.mjs','extensions-ui.mjs','composition-ui.mjs','variants-ui.mjs','scene-ui.mjs','director-ui.mjs','render-monitor-ui.mjs','render-ui.mjs'].map(n=>read(n).replace(/^import .*;\r?\n/gm,'').replace(/^export /gm,'')).join('\n');
+const script=engine+'\n'+labels+'\n'+extra+'\n'+app;
+if(/<\/script/i.test(script))throw Error('Unsafe script delimiter.');
+const html=read('shell.html').replace('<!--STYLE-->',()=>'<style>'+read('style.css')+'</style>').replace('<!--SCRIPT-->',()=>'<script>"use strict";\n(()=>{'+script+'\n})();</script>');
+mkdirSync(path.join(dir,'dist'),{recursive:true});writeFileSync(path.join(dir,'dist/index.html'),html);console.log('Built standalone Scene DNA — no runtime dependencies.');
