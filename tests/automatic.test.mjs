@@ -41,3 +41,19 @@ test('HTTP automatic series preserves settings, queues sequentially, stops after
 
 
 test('minus-one seed selects a distinct random seed for every requested variant',()=>{const seeds=seriesSeeds(3,'increment',-1);assert.equal(seeds.length,3);assert.equal(new Set(seeds).size,3);assert.ok(seeds.every(s=>Number.isSafeInteger(s)&&s>=0));});
+
+test('model card values are advisory until explicitly applied, including old automatic-card policy',async()=>{
+ const {modelCardSampling}=await import('../automatic-ui.mjs');const saved={steps:20,sampler:'lcm',denoise:.25},p={state:'ready',values:{steps:6,sampler:'euler',scheduler:'beta'}};
+ assert.deepEqual(modelCardSampling(saved,p,{mode:'image',useImage:false}),saved);
+ assert.deepEqual(modelCardSampling(saved,p,{mode:'image',useImage:false,policy:'card'}),saved);
+ assert.deepEqual(modelCardSampling(saved,p,{mode:'image',useImage:false,apply:true}),{steps:6,sampler:'euler',scheduler:'beta',denoise:1});
+ assert.equal(modelCardSampling(saved,p,{mode:'image',useImage:true,apply:true}).denoise,.25);
+ assert.deepEqual(modelCardSampling(saved,p,{mode:'image',useImage:false,policy:'manual'}),saved);assert.equal(saved.denoise,.25);
+});
+
+test('checking FLUX recommendations never mutates sampling, with or without an available card',async()=>{
+ const {modelCardSampling}=await import('../automatic-ui.mjs');const old={steps:12,cfg:1,sampler:'lcm',scheduler:'karras',denoise:1},none={state:'unavailable'};
+ assert.deepEqual(modelCardSampling(old,none,{family:'flux1',mode:'image',useImage:false}),old);
+ assert.deepEqual(modelCardSampling(old,none,{family:'flux1',mode:'image',policy:'manual'}),old);
+ assert.equal(modelCardSampling(old,{state:'ready',values:{sampler:'dpmpp_2m',scheduler:'simple'}},{family:'flux1',mode:'image'}).sampler,'lcm');
+});

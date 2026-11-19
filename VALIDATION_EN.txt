@@ -1,0 +1,30 @@
+CREATOR HUB GLOBAL 0.14.1 — VALIDATION
+
+202/202 source tests passed. 202/202 tests passed in the staged public
+repository, including the optional CPU Loop fixture using an existing
+Python environment. No new software/model was downloaded for tests.
+
+Browser checks passed: independent sampler/scheduler override switches,
+effective values and retained custom choices after reload; FLUX own profiles
+and explicit recommendation application; eight interface languages including
+the new switches; MOSS CFG correction; assistant start/cancel, context retry,
+memory handoff and explicit prompt application; complete simulated image/video
+generation/history/compare/trash workflow and responsive layout.
+
+The history test exposed two outdated browser expectations (inactive LoRAs
+remain visible, and errors now open a copyable report). Tests now follow the
+current UI. The comparison test also waits for its asynchronous dialog.
+A genuine short-cache miss for fresh history results was repaired and covered
+by a regression test. The complete browser workflow then passed.
+
+The local 9B vision request was separately verified during these fixes with
+a synthetic red circle/yellow square on blue. The old generate path described
+the unrelated reference text; the corrected chat path identified the image.
+No real image/video GPU-generation quality benchmark was performed for this
+release. Graph defaults are starting values, not universal fine-tune presets.
+
+Clean Windows ZIP: manifest and every archived SHA256 verified; no user data,
+credentials, model weights or local work logs included. Official Node.js 24 x64
+runtime and existing third-party notices are retained. Model assets and
+ComfyUI/Ollama remain separately installed. Generated media rights still depend
+on the models and source material used.

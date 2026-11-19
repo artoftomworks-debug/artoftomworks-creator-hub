@@ -1,0 +1,32 @@
+UPDATING TO CREATOR HUB GLOBAL 0.14.1
+
+This is a complete replacement application package. No earlier version is
+needed for a fresh install. Models, ComfyUI and Ollama are not bundled.
+
+1. Finish or stop all Hub generation, editing and assistant work.
+2. Close the OLD HUB SERVER window. Closing the browser tab is not enough.
+3. Back up the existing Hub folder, especially its data subfolder. Also
+   keep a backup of generated media in the ComfyUI output folder.
+4. Extract the complete new ZIP. Copy the CONTENTS of its
+   ArtofTomworks_CreatorHub folder over the existing application folder,
+   replacing program files. Keep your existing data folder in place.
+   Do not accidentally create an extra nested application folder.
+5. Start the usual launcher and refresh the browser with Ctrl+F5.
+   Verify 0.14.1 in the header. Do not run two copies against the same data.
+
+First open checks former automatic model-card settings once. Unmodified
+inherited values may change to the graph's starting values, with a visible
+notice. Explicit manual plans are preserved. Review settings before the
+first generation. Starting values are not proof of optimal settings for
+every fine-tune, accelerator or quantization; a complete workflow matters.
+
+Custom sampler and Custom scheduler are independent switches. OFF uses
+the workflow's original value or the automatic graph's starting value.
+ON restores your remembered custom choice. The displayed effective value
+is the value used for generation. Separate Keep selection checkboxes
+control model-switch behaviour, rather than enabling the override.
+
+An image-to-prompt request needs a vision-capable local assistant. Add the
+start image, choose Image to prompt and enable using that image. Stop AI
+is available at the top and beside Create suggestion. Cancelling does not
+replace your generation prompt. The optional 9B model is not required.

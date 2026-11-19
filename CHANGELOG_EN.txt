@@ -1,4 +1,28 @@
-﻿ARTOFTOMWORKS CREATOR HUB GLOBAL — 0.14.0 PUBLIC BETA
+ARTOFTOMWORKS CREATOR HUB GLOBAL — 0.14.1 BUGFIX RELEASE
+19 November 2026
+
+- Independent Custom sampler / Custom scheduler ON/OFF switches. OFF uses
+  the source workflow value or automatic graph starting value. Custom
+  selections stay remembered and the effective values remain visible.
+- Model-card/example settings are advisory. Checking them never changes
+  generation settings. Applying them is a separate explicit action.
+- Per-model settings persist; old automatically inherited card settings
+  are checked once. MOSS starting CFG is 1, with user CFG/steps preserved.
+- Image-to-prompt uses multimodal chat, including the image in the user
+  message. Vision context budgets grow within limits; exact text echoes
+  cannot be applied as a completed image description.
+- Stop AI is available immediately, also before start acknowledgement,
+  and stays reachable in the assistant header. Cancelled late requests
+  cannot start inference. Background AI launch requests no extra console.
+- Fresh history results are rechecked when a short cached list is stale.
+
+Full Windows x64 update, not a patch-only download. ComfyUI, generative
+models and optional Ollama/assistant weights remain separate installs.
+See UPDATE_EN.txt before updating. Existing data and media are not bundled.
+
+PREVIOUS RELEASE / KORÁBBI KIADÁS
+
+ARTOFTOMWORKS CREATOR HUB GLOBAL — 0.14.0 PUBLIC BETA
 18 November 2026
 
 First Global public package with the full Prompt Studio language set:

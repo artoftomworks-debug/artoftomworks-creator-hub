@@ -7,7 +7,11 @@ import {execFileSync} from 'node:child_process';
 import {createHistory,resultID,outputFolder,localDateFolder} from '../history.mjs';
 import {createRenderServices} from '../runner.mjs';
 import {createHubServer} from '../server.mjs';
-import {fakeBackend,plan,video} from './fixtures.mjs';
+import {fakeBackend,plan,video,picture} from './fixtures.mjs';
+
+test('freshly completed result can be opened even when history cached the previous list',async()=>{
+ const root=await mkdtemp(path.join(tempBase,'hub-fresh-history-'));try{const dir=path.join(root,'data','runs');await mkdir(dir,{recursive:true});const h=createHistory({root});assert.equal((await h.list()).total,0);const id='a'.repeat(32);await writeFile(path.join(dir,id+'.json'),JSON.stringify({schema:'artoftomworks.scene-dna.run',id,title:'Fresh',backend:'http://127.0.0.1:7821',created:Date.now(),jobs:[{shotId:'work',mode:'image',state:'complete',prompt:picture.prompt,results:[{filename:'fresh.png',type:'output'}]}]}));const entry=await h.item(resultID(id,'work',0));assert.equal(entry.filename,'fresh.png');assert.match((await h.details(entry.id)).prompt,/lighthouse/);await assert.rejects(h.item('b'.repeat(32)),/nem található/);}finally{await rm(root,{recursive:true,force:true});}
+});
 
 test('history restores old runs, persists independent ratings/favorites/categories and combines date/project filters',async()=>{
  const root=await mkdtemp(path.join(tempBase,'hub-history-'));try{

@@ -1,4 +1,26 @@
-﻿ARTOFTOMWORKS CREATOR HUB GLOBAL — 0.14.0 NYILVÁNOS BÉTA
+ARTOFTOMWORKS CREATOR HUB GLOBAL — 0.14.1 JAVÍTÓKIADÁS
+2026. november 19.
+
+- Külön Saját sampler és Saját scheduler BE/KI kapcsoló. Kikapcsolva a
+  workflow eredeti vagy az automatikus gráf kiinduló értéke érvényesül.
+  A saját választás megmarad, a tényleges érték mindig látható.
+- Az adatlap/példaképek ajánlásai csak tanácsok. Ellenőrzésük nem módosít
+  semmit; alkalmazásuk külön felhasználói művelet.
+- Modellenként megjegyzett értékek, régi automatikus átvételek egyszeri
+  ellenőrzése. MOSS kezdő-CFG 1, saját CFG és lépésszám megőrzésével.
+- Képből prompt: valódi multimodális kérés, korlátozott automatikus
+  kontextusemelés; a forrásszöveg puszta ismétlése nem kész képleírás.
+- Azonnal elérhető, felül rögzített MI leállítása. A késve beérkező,
+  már leállított kérés sem indulhat el. Külön konzolt nem kér az MI indítása.
+- A frissen elkészült eredményt újra ellenőrzi, ha az előzménylista még régi.
+
+Teljes Windows x64 csomag, nem csak ráépülő patch. ComfyUI, generálómodellek
+és az opcionális Ollama/segítőmodellek külön telepítések. Frissítés előtt
+olvasd el az UPDATE_HU.txt fájlt. Személyes adatok és média nincs a csomagban.
+
+PREVIOUS RELEASE / KORÁBBI KIADÁS
+
+ARTOFTOMWORKS CREATOR HUB GLOBAL — 0.14.0 NYILVÁNOS BÉTA
 2026. november 18.
 
 Az első Global csomag a Prompt Studio teljes nyelvkészletével:

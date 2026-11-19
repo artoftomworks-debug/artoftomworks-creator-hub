@@ -76,3 +76,5 @@
 .modelSamplingPolicy{gap:6px;flex-wrap:wrap}.modelSamplingPolicy select{width:auto;max-width:100%;font-size:12px;padding:5px 8px}.modelSamplingPolicy button{font-size:12px;padding:5px 8px}#modelSamplingStatus{font-size:12px;line-height:1.4;margin:5px 0}
 
 .setupDetails{display:grid;grid-template-columns:minmax(110px,1fr) minmax(0,3fr);gap:7px 14px;font-size:13px;padding:12px;border:1px solid #45616b;border-radius:8px}.setupDetails dt{color:#acc4d0}.setupDetails dd{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}.setupDialog textarea{width:100%;resize:vertical}.setupDialog #setupStatus{padding:8px 0;font-weight:600}.setupDialog #setupTextPreview{margin:10px 0}.setupDialog #setupTextPreview label{display:block;margin-top:8px}
+
+.samplingOverrideSwitch{font-size:12px;padding:5px 9px;align-self:flex-start;border:1px solid #7695a1}.samplingOverrideSwitch.selected{background:#efc486;color:#11232c;font-weight:700}.samplingEffective{font-size:11px;line-height:1.35;color:#b9dce6;overflow-wrap:anywhere}

@@ -2,7 +2,7 @@
 
 Van egy jó modelled, egy ötleted és néhány bevált LoRA-d. A következő lépéshez egy olyan felület kell, ahol kiválasztod az eszközeidet, látod, mi történik, és meg is találod az elkészült munkát.
 
-Az **ArtofTomworks Creator Hub Global** ezt az alkotói munkateret fogja össze képhez, videóhoz és utómunkához. A generálást a háttérben a ComfyUI végzi; a gráfszerkesztőt akkor nyitod meg, amikor szükséged van rá. A 0.14.0 nyilvános béta.
+Az **ArtofTomworks Creator Hub Global** ezt az alkotói munkateret fogja össze képhez, videóhoz és utómunkához. A generálást a háttérben a ComfyUI végzi; a gráfszerkesztőt akkor nyitod meg, amikor szükséged van rá. A 0.14.1 nyilvános béta.
 
 ## Kinek ajánlott?
 
@@ -20,7 +20,7 @@ Válassz **Kép** módot és egy használatra kész modellt. Elsőre egy képet 
 
 > A small brass clock on a wooden desk beside a rain-streaked window, soft morning light, realistic materials, calm cinematic composition.
 
-A Generálás indítása az ellenőrzést és előkészítést is elvégzi. A modelladatlapból érkező ajánlott értékeket nézd át; az aktív modell sávja mindig segít ellenőrizni, mivel dolgozol.
+A Generálás indítása az ellenőrzést és előkészítést is elvégzi. Az adatlap ellenőrzése nem módosít értéket; az ajánlás külön kérésre alkalmazható. A sampler és scheduler saját felülírása külön BE/KI kapcsolható; az aktív modell sávja mindig segít ellenőrizni, mivel dolgozol.
 
 Az automatikus összeállítás SD 1.x/2.x, SDXL, FLUX.1, Krea 2, MOSS, H3 és LTX 2.5 dokumentált ágait támogatja megfelelő komponensekkel. H3/LTX esetén a külön generálómodell/UNET ág kell; az LTX automatikus támogatása 2.5-re készült. A család felismerése nem jelent minden változatra támogatást. Más esetben megfelelő saját workflow használható.
 

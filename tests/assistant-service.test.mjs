@@ -1,19 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createAssistantService,DEEPSEEK_MODEL,assistantInstruction,cleanAssistantText} from '../assistant-service.mjs';
+import {createAssistantService,DEEPSEEK_MODEL,assistantInstruction,cleanAssistantText,assistantContext,nextAssistantContext,assistantImageMessage,isAssistantEcho} from '../assistant-service.mjs';
 const model='fixture-local:4b',tick=()=>new Promise(r=>setTimeout(r,2));
 async function finished(service,id){for(let i=0;i<1500;i++){const s=service.status(id);if(['complete','failed','cancelled'].includes(s.state))return s;await tick();}throw Error('Fixture job timed out');}
-function fixture({caps=['completion','thinking','vision'],chunks,blocked=false,unloadFails=false}={}){
+function fixture({caps=['completion','thinking','vision'],chunks,blocked=false,unloadFails=false,modelInfo={},contextNeeded=0,streamOverflow=false}={}){
  const calls=[];let gpu=false;
  const fetchImpl=async(url,options={})=>{const route=new URL(url).pathname,b=options.body?JSON.parse(options.body):null;calls.push({route,body:b});
   if(route==='/api/tags')return Response.json({models:[{name:model,size:1024},{name:'fake-local',remote_model:'cloud-remote'},{name:'remote:cloud'}]});
-  if(route==='/api/show')return Response.json({capabilities:caps});
+  if(route==='/api/show')return Response.json({capabilities:caps,model_info:modelInfo});
   if(route==='/api/ps')return Response.json({models:gpu?[{name:model,size_vram:1024}]:[]});
   if(route==='/api/pull')return new Response('{"status":"pulling","total":100,"completed":50}\n{"status":"success"}\n');
-  assert.equal(route,'/api/generate');if(!b.options){if(unloadFails)return Response.json({error:'unload refused'},{status:500});gpu=false;return Response.json({done:true});}
+  assert(['/api/generate','/api/chat'].includes(route));if(!b.options){assert.equal(route,'/api/generate');if(unloadFails)return Response.json({error:'unload refused'},{status:500});gpu=false;return Response.json({done:true});}
   gpu=b.options.num_gpu!==0;
+  if(b.options.num_ctx<contextNeeded){const error=`request (${contextNeeded} tokens) exceeds the available context size (${b.options.num_ctx} tokens), try increasing it`;return streamOverflow?new Response(JSON.stringify({error})+'\n'):Response.json({error},{status:500});}
   if(blocked)return new Response(new ReadableStream({start(controller){controller.enqueue(new TextEncoder().encode('{"response":"partial"}\n'));options.signal.addEventListener('abort',()=>controller.error(new DOMException('Aborted','AbortError')),{once:true});}}));
-  const text=chunks||JSON.stringify({response:'Árvíztűrő jelenet',done:true,eval_count:20,eval_duration:1e9})+'\n',bytes=new TextEncoder().encode(text);
+  let text=chunks||JSON.stringify({response:'Árvíztűrő jelenet',done:true,eval_count:20,eval_duration:1e9})+'\n';if(route==='/api/chat')text=text.trim().split('\n').map(line=>{const d=JSON.parse(line);if(d.response!==undefined){d.message={role:'assistant',content:d.response};delete d.response;}return JSON.stringify(d);}).join('\n')+'\n';const bytes=new TextEncoder().encode(text);
   return new Response(new ReadableStream({start(controller){for(let i=0;i<bytes.length;i++)controller.enqueue(bytes.slice(i,i+1));controller.close();}}));
  };
  const service=createAssistantService({fetchImpl,memoryAvailable:async()=>12*1024**3,releaseMS:50,timeoutMS:1000});return {service,calls,fetchImpl};
@@ -47,4 +48,81 @@ test('generation handoff during capability checking prevents a late inference fr
 test('truncated and disconnected responses are failed, never ready to apply; release failure stays visible and blocks handoff',async()=>{
  for(const chunks of ['{"response":"partial"}\n','{"response":"cut off","done":true,"done_reason":"length"}\n']){const f=fixture({chunks});try{const j=await f.service.request({action:'start',model,text:'scene'});assert.equal((await finished(f.service,j.id)).state,'failed');}finally{f.service.close();}}
  const f=fixture({unloadFails:true});try{const j=await f.service.request({action:'start',model,text:'scene'});assert.match((await finished(f.service,j.id)).error,/memória átadása/);await assert.rejects(f.service.releaseForGeneration(),/unload refused/);}finally{f.service.close();}
+});
+
+test('image context includes reply space, text stays small and model limits bound allocation',()=>{
+ assert.deepEqual(assistantContext(),{size:4096,limit:16384});
+ assert.equal(assistantContext({hasImage:true}).size,8192);
+ assert.equal(assistantContext({text:'x'.repeat(18000)}).size,10240);
+ assert.equal(assistantContext({hasImage:true,modelInfo:{'general.architecture':'qwen','qwen.context_length':4096}}).size,4096);
+ assert.equal(nextAssistantContext('request (4141 tokens) exceeds the available context size (4096 tokens), try increasing it',4096,16384),6144);
+ assert.equal(nextAssistantContext('request (17000 tokens) exceeds the available context size (8192 tokens)',8192,16384),null);
+ assert.equal(nextAssistantContext('out of memory',8192,16384),null);
+});
+
+test('reported 4141-token picture succeeds for different vision models without overflowing the old 4k ceiling',async()=>{
+ for(const caps of [['completion','vision'],['completion','vision','thinking']]){
+  const f=fixture({caps,contextNeeded:4141});try{
+   const j=await f.service.request({action:'start',model,task:'describe',image:'data:image/png;base64,YQ==',execution:'cpu'});
+   const r=await finished(f.service,j.id);assert.equal(r.state,'complete');assert.equal(r.execution,'cpu');
+   const requests=f.calls.filter(c=>c.body?.options);assert.equal(requests.length,1);assert.equal(requests[0].route,'/api/chat');assert.equal(requests[0].body.options.num_ctx,8192);assert.equal(requests[0].body.options.num_predict,800);assert.deepEqual(requests[0].body.messages[1].images,['YQ==']);assert.equal(requests[0].body.messages[0].role,'system');
+  }finally{f.service.close();}
+ }
+});
+
+test('precise context overflow retries both HTTP and streamed failures with reserved reply space',async()=>{
+ for(const streamOverflow of [false,true]){const f=fixture({contextNeeded:9000,streamOverflow});try{
+  const j=await f.service.request({action:'start',model,task:'describe',image:'data:image/png;base64,YQ=='});
+  assert.equal((await finished(f.service,j.id)).state,'complete');
+  assert.deepEqual(f.calls.filter(c=>c.body?.options).map(c=>c.body.options.num_ctx),[8192,10240]);
+  assert(f.calls.some(c=>c.route==='/api/ps'));
+ }finally{f.service.close();}}
+});
+
+test('model context ceiling and excessive image tokens fail clearly without retry loops; memory is released',async()=>{
+ for(const config of [{contextNeeded:4141,modelInfo:{'general.architecture':'fixture','fixture.context_length':4096}},{contextNeeded:20000}]){
+  const f=fixture(config);try{const j=await f.service.request({action:'start',model,task:'describe',image:'data:image/png;base64,YQ=='});
+   const r=await finished(f.service,j.id);assert.equal(r.state,'failed');assert.match(r.error,/feldolgozási keretében/);
+   assert.equal(f.calls.filter(c=>c.body?.options).length,1);assert(f.calls.some(c=>c.route==='/api/ps'));
+  }finally{f.service.close();}
+ }
+});
+
+test('a partial answer or unrelated backend error must never trigger a context retry',async()=>{
+ for(const chunks of ['{"response":"partial"}\n{"error":"request (9000 tokens) exceeds the available context size (8192 tokens)"}\n','{"error":"out of memory"}\n']){
+  const f=fixture({chunks});try{const j=await f.service.request({action:'start',model,text:'scene'});assert.equal((await finished(f.service,j.id)).state,'failed');assert.equal(f.calls.filter(c=>c.body?.options).length,1);}finally{f.service.close();}
+ }
+});
+
+test('image description asks for visible content explicitly instead of treating old prompt as the caption',async()=>{
+ const source='A quiet mountain lake at sunrise.';const content=assistantImageMessage({task:'describe',text:source});
+ assert.match(content,/Inspect the attached image/);assert.match(content,/Optional user context/);assert(content.endsWith(source));assert.notEqual(content,source);
+ assert(isAssistantEcho(' "A QUIET mountain lake at sunrise!" ',source));assert(!isAssistantEcho('A red circle on a blue background.',source));
+ const f=fixture();try{const j=await f.service.request({action:'start',task:'describe',model,text:source,image:'data:image/png;base64,YQ=='});assert.equal((await finished(f.service,j.id)).state,'complete');const body=f.calls.find(c=>c.route==='/api/chat').body;assert.equal(body.messages[1].content,content);assert.equal(body.prompt,undefined);assert.equal(body.images,undefined);}finally{f.service.close();}
+});
+
+test('echoed source text is never available as a completed image description; refinement can intentionally preserve text',async()=>{
+ const text='A quiet mountain lake at sunrise.',f=fixture({chunks:JSON.stringify({response:text,done:true})+'\n'});try{
+  let j=await f.service.request({action:'start',task:'describe',model,text,image:'data:image/png;base64,YQ=='});let r=await finished(f.service,j.id);assert.equal(r.state,'failed');assert.equal(r.text,'');assert.match(r.error,/visszamásolta/);
+  j=await f.service.request({action:'start',task:'refine',model,text});r=await finished(f.service,j.id);assert.equal(r.state,'complete');assert.equal(r.text,text);
+ }finally{f.service.close();}
+});
+
+test('stop arriving before start prevents the delayed request from loading or running any model',async()=>{
+ const f=fixture(),id='a'.repeat(32);try{
+  const stopped=await f.service.request({action:'cancel',id});assert.equal(stopped.state,'cancelled');
+  const j=await f.service.request({action:'start',id,model,text:'Wrong task'});assert.equal(j.state,'cancelled');assert.equal(f.calls.length,0);
+  await assert.rejects(f.service.request({action:'start',id,model,text:'duplicate'}),/azonosító/);
+  const next=await f.service.request({action:'start',id:'b'.repeat(32),model,task:'scene',text:'New scene'});assert.equal((await finished(f.service,next.id)).state,'complete');
+ }finally{f.service.close();}
+});
+
+test('stop aborts capability lookup before inference and allows selecting a different task afterward',async()=>{
+ const f=fixture();let checking=false;const service=createAssistantService({fetchImpl:async(url,options)=>{
+  if(url.endsWith('/api/show')){checking=true;await new Promise((resolve,reject)=>{if(options.signal.aborted)reject(options.signal.reason);else options.signal.addEventListener('abort',()=>reject(options.signal.reason),{once:true});});}
+  return f.fetchImpl(url,options);
+ }});try{
+  const j=await service.request({action:'start',model,text:'Wrong task'});for(let i=0;i<100&&!checking;i++)await tick();assert(checking);
+  await service.request({action:'cancel',id:j.id});assert.equal((await finished(service,j.id)).state,'cancelled');assert(!f.calls.some(c=>c.body?.options));
+ }finally{service.close();f.service.close();}
 });

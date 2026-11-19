@@ -1,5 +1,5 @@
-﻿ARTOFTOMWORKS CREATOR HUB GLOBAL
-0.14.0 — Public Beta — 18 November 2026
+ARTOFTOMWORKS CREATOR HUB GLOBAL
+0.14.1 — Public Beta — 19 November 2026
 
 A local workspace for AI images, video and creative finishing, powered by
 ComfyUI. Choose a model, add compatible LoRAs, write your prompt and create
@@ -139,3 +139,6 @@ Third-party components retain their own licenses. Generated media remain
 subject to the model and source-media rights that apply to them.
 Optional support: https://ko-fi.com/artoftomworks
 GitHub: https://github.com/artoftomworks-debug/artoftomworks-creator-hub
+
+SAMPLER, SCHEDULER AND UPDATING
+See UPDATE_EN.txt for independent override switches, model settings and safe updating.

@@ -2,7 +2,7 @@
 
 # ArtofTomworks Creator Hub Global
 
-**Your local image & video studio, powered by ComfyUI.** Public Beta 0.14.0.
+**Your local image & video studio, powered by ComfyUI.** Public Beta 0.14.1.
 
 Choose a supported local model, add compatible LoRAs and create images or videos
 from a clear workspace with visible generation, live preview and organized history.
@@ -12,9 +12,13 @@ Open ComfyUI's graph editor whenever you need it. SwarmUI is not required.
 without changing your prompts, model names or settings. Technical diagnostics can
 fall back to English; third-party tools keep their own language handling.
 
+## 0.14.1 bugfix update
+
+Independent custom sampler/scheduler switches, advice-only model-card recommendations, per-model settings, MOSS CFG correction, improved local image-to-prompt requests and immediate Stop AI. See [update instructions](UPDATE_EN.txt) / [frissítés magyarul](UPDATE_HU.txt).
+
 ## Download and start
 
-[Download the Windows x64 ZIP](downloads/ArtofTomworks_CreatorHub_0.14.0_GLOBAL_Windows_x64.zip)
+[Download the Windows x64 ZIP](downloads/ArtofTomworks_CreatorHub_0.14.1_GLOBAL_Windows_x64.zip)
 
 1. Extract the entire ZIP into a writable folder.
 2. Run `START_CREATOR_HUB.cmd` and keep the server window open.

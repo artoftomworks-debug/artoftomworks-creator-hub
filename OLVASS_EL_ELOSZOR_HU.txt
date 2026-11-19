@@ -1,4 +1,4 @@
-﻿ARTOFTOMWORKS CREATOR HUB GLOBAL 0.14.0
+ARTOFTOMWORKS CREATOR HUB GLOBAL 0.14.1
 
 Bontsd ki a teljes Windows ZIP-et. START_CREATOR_HUB.cmd.
 A szerverablak maradjon nyitva. Meglévő, működő ComfyUI saját
@@ -8,3 +8,6 @@ Nyelvváltó: földgömb a fejlécben.
 Első próba: Kép, egy használatra kész modell, 1 darab, mérsékelt méret.
 Részletes leírás, fájlhelyek és korlátok: README_HU.txt.
 Ingyenes alkotói használat, kereskedelmi eredménnyel is: LICENSE.txt.
+
+SAMPLER, SCHEDULER ÉS FRISSÍTÉS
+A kapcsolók, modellbeállítások és biztonságos frissítés leírása: UPDATE_HU.txt.

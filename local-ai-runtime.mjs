@@ -43,7 +43,9 @@ export function createLocalAIRuntime({root,sourceRoot,fetchImpl=fetch,spawnProce
   const folder=path.join(root||sourceRoot,'data','logs');await mkdir(folder,{recursive:true});let output,error,child,spawnError;
   try{
    output=await open(path.join(folder,'ollama.stdout.log'),'a');error=await open(path.join(folder,'ollama.stderr.log'),'a');
-   child=spawnProcess(selected.exe,['serve'],{cwd:path.dirname(selected.exe),detached:true,windowsHide:true,shell:false,stdio:['ignore',output.fd,error.fd],env:{...env,OLLAMA_HOST:'127.0.0.1:11434',OLLAMA_NO_CLOUD:'1',OLLAMA_NUM_PARALLEL:'1',...(!env.OLLAMA_MODELS&&selected.models?{OLLAMA_MODELS:selected.models}:{})}});
+   // detached on Windows requests a new console. Keep redirected log handles
+   // and unref, but do not create a separate console for this background daemon.
+   child=spawnProcess(selected.exe,['serve'],{cwd:path.dirname(selected.exe),detached:false,windowsHide:true,shell:false,stdio:['ignore',output.fd,error.fd],env:{...env,OLLAMA_HOST:'127.0.0.1:11434',OLLAMA_NO_CLOUD:'1',OLLAMA_NUM_PARALLEL:'1',...(!env.OLLAMA_MODELS&&selected.models?{OLLAMA_MODELS:selected.models}:{})}});
    child.on('error',e=>spawnError=e);child.unref?.();
   }finally{await output?.close();await error?.close();}
   const deadline=Date.now()+waitMS;

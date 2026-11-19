@@ -68,13 +68,18 @@ async def main():
     await select_model('fixture.safetensors')
     await cdp.eval("document.querySelector('#prompt').value='Kép: keep my exact user prompt, Árvíztűrő test';document.querySelector('#prompt').dispatchEvent(new Event('input'));document.querySelector('#negative').value='Modellek';document.querySelector('#negative').dispatchEvent(new Event('input'));document.querySelector('#seed').value='34567';document.querySelector('#seed').dispatchEvent(new Event('input'))")
     expected={'EN':'Generate','DE':'Generieren','FR':'Générer','ES':'Generar','IT':'Genera','PT':'Gerar','PL':'Generuj','HU':'Generálás indítása'}
+    sampler_labels={'HU':'Saját sampler: BE','EN':'Custom sampler: ON','DE':'Eigener Sampler: AN','FR':'Échantillonneur personnalisé : OUI','ES':'Sampler propio: SÍ','IT':'Sampler personale: SÌ','PT':'Sampler próprio: LIGADO','PL':'Własny sampler: WŁ.'}
     for language,label in expected.items():
      await cdp.eval("document.querySelector('#hubLanguage').value="+json.dumps(language)+";document.querySelector('#hubLanguage').dispatchEvent(new Event('change'))")
      await cdp.wait("document.documentElement.lang==="+json.dumps(language.lower())+" && document.querySelector('#start').textContent==="+json.dumps(label))
+     await cdp.wait("document.querySelector('#samplerOverride').textContent==="+json.dumps(sampler_labels[language]))
      assert await cdp.eval("document.querySelector('#prompt').value==='Kép: keep my exact user prompt, Árvíztűrő test' && document.querySelector('#negative').value==='Modellek' && document.querySelector('#seed').value==='34567' && document.querySelector('#automaticModel').value==='checkpoints|fixture.safetensors'")
      assert await cdp.eval("(async()=> (await import('/i18n-ui.mjs')).sourceText(document.querySelector('#start'))==='Generálás indítása')()")
     await cdp.eval("document.querySelector('#hubLanguage').value='EN';document.querySelector('#hubLanguage').dispatchEvent(new Event('change'))")
     await cdp.wait("document.querySelector('#start').textContent==='Generate'")
+    await cdp.eval("document.querySelector('#schedulerOverride').click()")
+    await cdp.wait("document.querySelector('#schedulerOverride').textContent==='Custom scheduler: OFF' && document.querySelector('#scheduler').disabled && document.querySelector('#schedulerEffective').textContent.includes('Default')")
+    await cdp.eval("document.querySelector('#schedulerOverride').click()")
     await cdp.eval("document.querySelector('#openSetups').click()")
     await cdp.wait("document.querySelector('#setupsDialog h2').textContent==='Creative recipes'")
     await cdp.eval("document.querySelector('#closeSetups').click();document.querySelector('#openAssistant').click()")

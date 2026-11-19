@@ -1,5 +1,5 @@
-﻿ARTOFTOMWORKS CREATOR HUB GLOBAL
-0.14.0 — Nyilvános béta — 2026. november 18.
+ARTOFTOMWORKS CREATOR HUB GLOBAL
+0.14.1 — Nyilvános béta — 2026. november 19.
 
 Helyi alkotói felület képhez, videóhoz és utómunkához, ComfyUI-háttérrel.
 Válassz modellt, adj hozzá kompatibilis LoRA-kat, írd be a promptot, és
@@ -126,3 +126,6 @@ Ingyenes személyes és kereskedelmi alkotói használat: LICENSE.txt.
 A program továbbértékesítése korlátozott; a külső komponensek licence külön él.
 Támogatás: https://ko-fi.com/artoftomworks
 GitHub: https://github.com/artoftomworks-debug/artoftomworks-creator-hub
+
+SAMPLER, SCHEDULER ÉS FRISSÍTÉS
+A kapcsolók, modellbeállítások és biztonságos frissítés leírása: UPDATE_HU.txt.

@@ -1,4 +1,5 @@
 import {ltxTiming} from './ltx.mjs';
+import {automaticSamplingDefaults,effectiveSampling} from './sampling-policy.mjs';
 import {attachH3Preview} from './preview-image.mjs';
 import {normalizeVideoOutputs,validateVideoOutputs} from './video-output.mjs';
 import {open,stat} from 'node:fs/promises';
@@ -71,8 +72,8 @@ export function createAutomatic({getObjects,fetchImpl,library}){
    if(family==='h3'){clip=add('CLIPLoader',{clip_name:choose('h3Clip','clip'),type:'minimax',device:'default'});vae=add('VAELoader',{vae_name:choose('h3Vae','vae')});audio=add('VAELoader',{vae_name:choose('h3Audio','vae')});}
   }
   if(!clip||!vae)throw Error('Nem állítható össze biztonságosan a modell kiegészítő készlete.');
-  const defaults={steps:family==='moss'?50:family==='h3'?(/turbo/i.test(model.title)?8:20):20,cfg:family==='moss'?3:['h3','ltx','flux1','krea2'].includes(family)?1:7,sampler:'euler',scheduler:['h3','moss','ltx'].includes(family)?'simple':'normal',denoise:1,guidance:3.5};
-  const s={...defaults,...data.sampling};validateSampling(s,all);
+  const defaults=automaticSamplingDefaults(model);
+  const s=effectiveSampling(data.sampling,defaults,data.samplingOverrides||data.controls?.samplingOverrides);validateSampling(s,all);
   if(family==='krea2')m=add('ModelSamplingFlux',{model:m,width:dims.width,height:dims.height,max_shift:1.15,base_shift:1.15});
   let latent,pos,neg;
   if(family==='h3'){

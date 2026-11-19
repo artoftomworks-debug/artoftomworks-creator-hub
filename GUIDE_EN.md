@@ -4,7 +4,7 @@ You have a model you like, a prompt in mind and a few LoRAs worth trying. What y
 
 That is the idea behind **ArtofTomworks Creator Hub Global**: a local workspace for images, video and creative finishing, with ComfyUI doing the generation in the background. You can open the graph editor whenever you need it, while everyday work happens in the Hub.
 
-This guide takes you through a first image, a useful series of variations and the next steps toward video. Version 0.14.0 is a public beta.
+This guide takes you through a first image, a useful series of variations and the next steps toward video. Version 0.14.1 is a public beta.
 
 ## Who is it for?
 
@@ -28,7 +28,7 @@ Choose **Image**, select a ready local model and start with an easy prompt:
 
 Use a size suitable for that model and your hardware, choose one result and click **Generate**. Preparation runs automatically. Missing components should be explained on the interface rather than leaving you guessing.
 
-The active-model strip makes the current choice visible. Model-card recommendations can provide sampling values when available; review them and adjust them for your task. A model family being recognized does not guarantee every loader or quantized variant works.
+The active-model strip makes the current choice visible. Model-card recommendations are optional advice: checking them changes nothing, and applying them is a separate action. Custom sampler and Custom scheduler switches retain your own choices while OFF uses the workflow/default values. A model family being recognized does not guarantee every loader or quantized variant works.
 
 Automatic assembly covers documented branches of SD 1.x/2.x, SDXL, FLUX.1, Krea 2, MOSS, H3 and LTX 2.5 with the matching installed components. H3/LTX use the diffusion-model branch; the automatic LTX branch targets 2.5. Other cases can use a suitable custom workflow.
 
