@@ -84,7 +84,37 @@ export function createVideoWorkshopService({root=new URL('./data/video-workshop/
    check();const info=await probe({path:output,ext:extension});if(info.duration<Math.min(.1,length*.8)||Math.abs(info.duration-length)>Math.max(.4,length*.02))throw Error('Output verification failed');job.progress=100;job.result={name:basename(output),bytes:(await stat(output)).size,duration:info.duration,width:info.width,height:info.height,fps:info.fps,audio:info.audio};job.finished=Date.now();await writeFile(join(folder,'export.json'),JSON.stringify({...jobView(job),state:'done',project:p}),{flag:'wx'});check();succeeded=true;
   }catch(e){failedState=job.cancelled?'cancelled':'failed';job.error=String(e.message||e).slice(-3000);}finally{job.child=null;job.finished=Date.now();try{for(const name of await readdir(job.folder)){if(/^part-\d{3}\.(mp4|wav)$|^parts\.txt$|^assembly\.(mp4|wav)$|^look-\d+\.cube$|^brand-\d+\.png$/.test(name)||(!succeeded&&(/^result\.(mp4|mkv|wav)$/.test(name)||name==='export.json')))await unlink(join(job.folder,name));}}catch{}if(succeeded&&job.cancelled){succeeded=false;failedState='cancelled';try{await unlink(join(job.folder,job.result.name));await unlink(join(job.folder,'export.json'));}catch{}}current=null;job.state=succeeded?'done':job.cancelled?'cancelled':failedState;}}
  async function clipSource(raw,allowSound=false){await init();await detect();if(current||uploading)throw Error('Another operation is active');const p=C.normalize(raw.project),c=allowSound&&raw.soundId?p.sounds.find(c=>c.id===raw.soundId):p.clips.find(c=>c.id===raw.clipId);if(!c)throw Error('Select a source video clip');uploading=true;try{const a=await checkedAsset(c.asset);if(p.assets.find(x=>x.id===a.id)?.hash!==a.hash)throw Error('Source fingerprint mismatch');return {p,c,a};}catch(error){uploading=false;throw error;}}
- async function extractFrame(raw,onChild){const {c,a}=await clipSource(raw);let path;try{if(a.hdr)throw Error('HDR frame transfer is not supported');if(a.width*a.height>24000000)throw Error('Frame exceeds image workshop size limit');const time=C.num(raw.time,c.in,Math.max(c.in,c.out-1/(a.fps||24)),c.in);path=join(root,'frame-'+randomUUID()+'.png');await runVideoTool(await detect(),['-hide_banner','-loglevel','error','-nostdin','-n','-ss',f(time),...input(a),'-map','0:v:0','-frames:v','1','-an','-vf',`eq=brightness=${f(c.brightness)}:contrast=${f(c.contrast)}:saturation=${f(c.saturation)}`,'-threads','2',path],{timeout:30000,onChild});return await readFile(path);}finally{if(path)try{await unlink(path);}catch{}uploading=false;}}
+ async function extractFrame(raw,onChild){
+  const {c,a}=await clipSource(raw);let framePath;
+  try{
+   if(a.hdr)throw Error('HDR frame transfer is not supported');
+   if(a.width*a.height>24000000)throw Error('Frame exceeds image workshop size limit');
+   const time=C.num(raw.time,c.in,Math.max(c.in,c.out-1/(a.fps||24)),c.in),executable=await detect();
+   framePath=join(root,'frame-'+randomUUID()+'.png');
+   const decode=async(seek,last=false)=>{
+    const args=['-hide_banner','-loglevel','error','-nostdin','-n',...seek,...input(a),'-map','0:v:0','-an','-vf',`eq=brightness=${f(c.brightness)}:contrast=${f(c.contrast)}:saturation=${f(c.saturation)}`];
+    // Decode a bounded tail and keep replacing one PNG: the final decoded frame wins.
+    // This avoids estimating the last PTS from the container's rounded duration.
+    args.push(...(last?['-fps_mode','passthrough','-update','1','-compression_level','1']:['-frames:v','1']),'-threads','2',framePath);
+    await runVideoTool(executable,args,{timeout:30000,onChild});
+    let png;try{png=await readFile(framePath);}catch(error){if(error.code==='ENOENT')return null;throw error;}
+    if(png.length<33||png.subarray(0,8).toString('hex')!=='89504e470d0a1a0a')throw Error('The video decoder did not produce a valid image. The source video was kept.');
+    return png;
+   };
+   let png;
+   if(raw.lastFrame===true){
+    png=await decode(['-sseof','-1'],true);
+    // Audio can outlast video by more than one second. In that case decode from
+    // the beginning, still using a single output file and bounded process time.
+    if(!png)png=await decode(['-ss','0'],true);
+   }else{
+    png=await decode(['-ss',f(time)]);
+    if(!png&&time>c.in)png=await decode(['-ss',f(Math.max(c.in,time-Math.max(.05,1/(a.fps||24))))]);
+   }
+   if(!png)throw Error('No decodable video frame was found. The source video was kept.');
+   return png;
+  }finally{if(framePath)try{await unlink(framePath);}catch{}uploading=false;}
+ }
  async function waveform(raw,onChild){const {c,a}=await clipSource(raw,true),bins=1024,peaks=new Float32Array(bins),duration=c.out-c.in;try{if(!a.audio)return {peaks:Array.from(peaks),from:c.in,duration,silent:true};const executable=await detect();await new Promise((done,fail)=>{const child=spawn(executable,['-hide_banner','-loglevel','error','-nostdin','-ss',f(c.in),...input(a),'-t',f(duration),'-map','0:a:0','-vn','-ac','1','-ar','8000','-f','s16le','-'],{windowsHide:true,stdio:['ignore','pipe','pipe']});onChild?.(child);let carry=Buffer.alloc(0),samples=0,error='';const expected=Math.max(1,Math.ceil(duration*8000)),timer=setTimeout(()=>{child.kill();fail(Error('Waveform timed out'));},45000);child.stderr.on('data',d=>error=(error+d).slice(-3000));child.stdout.on('data',part=>{const chunk=carry.length?Buffer.concat([carry,part]):part;for(let i=0;i+1<chunk.length;i+=2){const index=Math.min(bins-1,Math.floor(samples++/expected*bins));peaks[index]=Math.max(peaks[index],Math.abs(chunk.readInt16LE(i))/32768);}carry=chunk.length%2?chunk.subarray(-1):Buffer.alloc(0);});child.once('error',e=>{clearTimeout(timer);fail(e);});child.once('close',code=>{clearTimeout(timer);code===0?done():fail(Error(error||'Waveform decoding failed'));});});return {peaks:Array.from(peaks),from:c.in,duration,silent:!peaks.some(v=>v>0)};}finally{uploading=false;}}
  async function waveformAsset(id,onChild){await init();const a=await checkedAsset(id);if(!a.audio)throw Error('Audio source required');const p=C.add(C.fresh(),a,'sound');return waveform({project:p,soundId:p.sounds[0].id},onChild);}
  async function start(raw,preview=false,frames=[]){await init();await detect();if(current||uploading)throw Error('Another operation is active');const p=C.normalize(raw);if(!p.clips.length)throw Error('Add a video clip');if(!preview&&p.output.mode==='copy'&&!C.pictureCopyAllowed(p))throw Error('Picture-preserving mode requires one full video without picture changes');const checkedFrames=validateBrandFrames(p,frames);if(B.active(p.branding,C.duration(p)).length&&p.output.mode==='wav'&&!preview)throw Error('Choose edited video export to include branding');const id=randomUUID(),job={id,state:'running',progress:0,preview:!!preview,pictureVerified:false,cancelled:false,started:Date.now(),folder:join(jobsRoot,id)};current=id;jobs.set(id,job);void execute(job,p,checkedFrames);return jobView(job);}

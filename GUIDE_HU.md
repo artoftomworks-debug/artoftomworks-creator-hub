@@ -2,7 +2,7 @@
 
 Van egy jó modelled, egy ötleted és néhány bevált LoRA-d. A következő lépéshez egy olyan felület kell, ahol kiválasztod az eszközeidet, látod, mi történik, és meg is találod az elkészült munkát.
 
-Az **ArtofTomworks Creator Hub Global** ezt az alkotói munkateret fogja össze képhez, videóhoz és utómunkához. A generálást a háttérben a ComfyUI végzi; a gráfszerkesztőt akkor nyitod meg, amikor szükséged van rá. A 0.14.1 nyilvános béta.
+Az **ArtofTomworks Creator Hub Global** ezt az alkotói munkateret fogja össze képhez, videóhoz és utómunkához. A generálást a háttérben a ComfyUI végzi; a gráfszerkesztőt akkor nyitod meg, amikor szükséged van rá. A 0.17.0 nyilvános béta.
 
 ## Kinek ajánlott?
 

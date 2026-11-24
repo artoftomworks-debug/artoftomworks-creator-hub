@@ -25,6 +25,18 @@ try {
         $expectedHubVersion = $Matches[1]
         $null = Restart-HubIfIdle -Root $PSScriptRoot -ExpectedVersion $expectedHubVersion
     }
-    & $NodeExe (Join-Path $PSScriptRoot 'server.mjs') --open
-    if ($LASTEXITCODE -ne 0) { throw 'The local server stopped with an error.' }
+    # 0.16 DEV: the server runs hidden (log: data\logs\hub.log); this window closes once the Hub is up.
+    # Stop / restart: the "⏻ Hub" button on the page or the tray icon next to the clock (the Hub starts it).
+    $launcher = Join-Path $PSScriptRoot 'hub-launch.mjs'
+    if (-not (Test-Path -LiteralPath $launcher)) {
+        & $NodeExe (Join-Path $PSScriptRoot 'server.mjs') --open
+        if ($LASTEXITCODE -ne 0) { throw 'The local server stopped with an error.' }
+        return
+    }
+    try { [Console]::OutputEncoding = [Text.Encoding]::UTF8 } catch {}
+    $out = @(& $NodeExe $launcher --open)
+    $code = $LASTEXITCODE
+    $out | ForEach-Object { Write-Host $_ }
+    if ($code -ne 0) { throw 'A Hub nem indult el. A hiba fent latszik; teljes naplo: data\logs\hub.log' }
+    Start-Sleep -Seconds 2
 } catch { Write-Host $_.Exception.Message -ForegroundColor Red; Read-Host 'Press Enter to close'; exit 1 }

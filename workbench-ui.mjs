@@ -1,5 +1,5 @@
 import {sizePresets,sizeProblem,nearestSize,presetLabel} from './settings.mjs';
-export function createWorkbench({$,current,getState,request,act,edited,capture,save,renderLoras,draw,notify,onFavorite=()=>{}}){
+export function createWorkbench({$,current,getState,request,act,edited,capture,save,renderLoras,draw,notify,onFavorite=()=>{},samplingInfo=()=>''}){
  let loading=false;
  const mode=()=>getState().mode;
  const selectValues=()=>{const c=current();return (c.info?.modelFields||[]).map(field=>(c.controls.models||[]).find(row=>row.node===field.node&&row.key===field.key)||field);};
@@ -46,7 +46,8 @@ export function createWorkbench({$,current,getState,request,act,edited,capture,s
   const s=c.controls.sampling||c.info?.sampling||{};
   const lines=[['Modell',c.blockedModel?.name||values.map(f=>f.name).join(' · ')||'Válassz modellt.'],['Méret',presetLabel(c.width,c.height)],['Sorozat',(c.count||1)+' változat · '+(c.seed===-1?'véletlen seedek':({random:'véletlen seedek',increment:'léptetett seedek',fixed:'azonos seed'}[c.seedMode]||'azonos seed'))],['Seedek',c.seed===-1||c.seedMode==='random'?'Indításkor új véletlen seedek':c.seedMode==='fixed'?String(c.seed)+' · minden változat ugyanazt kapja':Array.from({length:Math.min(24,Math.max(1,Number(c.count)||1))},(_,i)=>String(Number(c.seed)+i*(c.seedStep??1))).join(', ')],['Mintavételezés',(s.steps??'—')+' lépés · CFG '+(s.cfg??'—')+' · '+(s.sampler||'—')+' / '+(s.scheduler||'—')],['LoRA-k',rows.length?rows.map(r=>r.name+' × '+r.strength+(r.clip===null?'':' / CLIP '+r.clip)).join('\n'):'Nincs bekapcsolt LoRA']];
   if(mode()==='video')lines.push(['Videóhossz',c.prepared&&c.preparedTiming?c.duration+' mp kérve → '+c.preparedTiming.seconds.toFixed(3)+' mp · '+c.preparedTiming.frames+' képkocka · '+c.preparedTiming.fps+' fps':c.duration+' mp kérve · tényleges hossz az előkészítés után']);
-  for(const[label,value]of lines){const dt=document.createElement('dt');dt.textContent=label;const dd=document.createElement('dd');dd.textContent=value;$('summaryContent').append(dt,dd);}
+  let source='';try{source=samplingInfo()||'';}catch{}
+  for(const[label,value]of lines){const dt=document.createElement('dt');dt.textContent=label;const dd=document.createElement('dd');dd.textContent=value;/* 0.16 DEV: honnan jön az érték – külön elemben, hogy lefordítható legyen */if(label==='Mintavételezés'&&source){dd.append('\n(');for(const [i,part] of source.split(' · ').entries()){if(i)dd.append(' · ');const m=part.match(/^(lépés|CFG): (.*)$/);for(const t of m?[m[1],': ',m[2]]:[part]){if(t===': '){dd.append(t);continue;}const e=document.createElement('span');e.textContent=t;dd.append(e);}}dd.append(')');}$('summaryContent').append(dt,dd);}
   $('summaryState').textContent=c.blockedModel?c.blockedModel.reason:c.prepared?'Ellenőrizve. Indítható.':'Indításkor automatikusan ellenőrzi és előkészíti a tervet.';
   const uncertain=rows.some(r=>{const entry=c.catalog?.loras.find(i=>i.name===r.name);return !entry||status(entry.family)!=='family-match';});$('compatWarning').textContent=uncertain?'Van nem igazolt családú LoRA a tervben. A forrás meglévő LoRA-i megmaradnak; új, ismeretlen fájlhoz külön engedély szükséges.':'';
  }

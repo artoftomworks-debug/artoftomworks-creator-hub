@@ -1,0 +1,18 @@
+﻿CREATOR HUB 0.13.11 — MOSS CFG KEZDŐÉRTÉK
+
+A MOSS beépített kezdő-CFG-je 3 helyett 1. Ez a mi kiinduló értékünk
+javítása, nem új internetes ajánlás. A saját CFG 1 / 1,5 / 2 megmarad.
+A saját 8 lépést és más samplingbeállítást ez a javítás nem módosítja.
+A 0.13.10-es tervben automatikusan megmaradt MOSS CFG 3 egyszer CFG 1-re
+áll helyre, látható jelzéssel. A régi ilyen mentett profil is javul első
+visszatöltésekor. Az új profil verziójelzést kap, így a későbbi tudatos
+saját beállításokat nem javítja újra. Explicit kézi továbbviteli módban
+nem változtat az értékeken; nincs általános CFG 2-es felső korlát sem.
+
+ÁTVÉTEL: a megszokott asztali Hub-indító újraindítása, majd Ctrl+F5.
+Verzió: 0.13.11. A korábbi MI- és modellbeállítás-javításokat is tartalmazza.
+197/197 automatikus teszt és külön MOSS böngészős próba sikeres, beleértve
+a régi CFG 3 / 8 lépés terv CFG 1 / 8 lépésre történő helyreállítását.
+Valódi GPU-generálás nem indult. A telepítő data/média fájlt nem módosít;
+a terv helyreállítása majd a frissített felület normál mentésén át történik.
+A GitHub/Civitai nyilvános 0.14.0 csomag továbbra is külön frissítésre vár.

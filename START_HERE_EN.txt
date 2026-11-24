@@ -1,7 +1,7 @@
-ARTOFTOMWORKS CREATOR HUB GLOBAL 0.14.1
+ARTOFTOMWORKS CREATOR HUB GLOBAL 0.17.0
 
 Extract the entire Windows ZIP. Run START_CREATOR_HUB.cmd.
-Keep its server window open. Existing ComfyUI, Python environment,
+It then runs in the background (tray icon next to the clock). Existing ComfyUI, Python environment,
 models and required nodes are needed. SwarmUI is not required.
 Choose the interface language with the globe selector.
 

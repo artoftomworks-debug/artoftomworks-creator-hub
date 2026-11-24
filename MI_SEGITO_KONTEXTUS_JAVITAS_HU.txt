@@ -1,0 +1,19 @@
+﻿CREATOR HUB 0.13.7 — MI-SEGÍTŐ KÉPES KÉRÉS JAVÍTÁSA
+
+A rögzített 4096 tokenes keret helyett a képes kérés 8192 tokennel indul.
+Pontos, feldolgozás előtti kerettúllépés esetén a Hub automatikusan emel és
+újrapróbál, helyet hagyva a válasznak. Legfeljebb három próbálkozás, összesen
+az eredeti időkorláton belül; legfeljebb 16384 token, illetve a modell saját
+korlátja. Rövid szöveges kérés továbbra is 4096 tokenes keretet használ.
+A memória kiválasztásánál a nagyobb keret is számít. Félkész válasz, általános
+motorhiba vagy megszakítás esetén nincs automatikus újraindítás.
+
+ÁTVÉTEL: indítsd újra ugyanazt a megszokott asztali Hub-indítót, majd Ctrl+F5.
+A fejlécben 0.13.7 legyen. Ezután az MI-segítőben újra kérhetsz képből promptot.
+Képfogadásra alkalmas modell szükséges; a szöveges Dolphin nem ilyen.
+
+Ellenőrzés: 188 automatikus teszt sikeres; külön böngészős képes próba,
+automatikus keretemelés és újrapróbálás, megszakítás és memóriaátadás sikeres.
+A böngészős próba szimulált modellt használt, valódi MI-generálás nem történt.
+A telepített modellek képességeit az Ollama helyi adatlapján ellenőriztük.
+Személyes data és média nem változott. A nyilvános 0.14.0 csomag nem változott.

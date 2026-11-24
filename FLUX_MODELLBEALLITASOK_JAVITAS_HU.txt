@@ -1,0 +1,32 @@
+﻿CREATOR HUB 0.13.6 — GONZALOMO / FLUX MODELLBEÁLLÍTÁSOK JAVÍTÁSA
+
+A konkrét modellverzió szerzői beállításai előnyt kapnak a példaképekből
+következtetett értékekkel szemben. A közös modellleírás más architektúrákra
+vonatkozó ajánlásait nem keveri bele. A 0,25 denoise-os utómunkapéldák nem
+adnak alapbeállítást a teljes képgeneráláshoz; a régi ilyen gyorsítótárat
+nem használja tovább. A modellkártya melletti helyi metaadatokat eltérő
+útvonalírás és csatolt könyvtár mellett is ellenőrzi.
+
+GonzaLomo v3.0 Flux D AIO: a konkrét helyi verzióleírás alapján indulásként
+6 lépés (a szerző 6–10 tartományának alsó értéke), CFG 1, guidance 3,5,
+Euler / Beta. Ha ez a páros hiányzik, DPM++ 2M / Simple választható a
+szerző által megadott második párosként. A 0,20–0,30 denoise a leírásban
+az SDXL-finomításhoz tartozik, nem az első FLUX-generáláshoz.
+
+FLUX dev: ha nincs pontos modellkártya-ajánlás, automatikus módban
+Euler / Normal a sampler/scheduler. A választott lépésszám megmarad.
+Így nem örökli tovább egy másik modell hibás LCM-beállítását.
+Új kép generálásánál a denoise modellváltáskor 1. Képből kép módban a
+beállított denoise megmarad. A Saját beállítások megtartása mód továbbra is
+enged szándékosan választott sampler/scheduler/denoise értékeket.
+
+ÁTVÉTEL
+A futó munka után indítsd ugyanazt az asztali Hub-indítót, majd Ctrl+F5.
+A fejlécben 0.13.6 legyen. A most mentett korábbi terv javításához válaszd
+ki újra a modellt, vagy használd az Adatlap frissítése gombot. Az automatikus
+modelladatlap mód legyen kiválasztva, ha a szerzői értékeket szeretnéd.
+
+183 automatikus teszt, külön GonzaLomo/FLUX böngészős próba, modellkártya-
+és nyolcnyelvű felületi regresszió sikeres. Valódi GPU-generálást a javítás
+ellenőrzése nem indított. A személyes data mappát és médiát nem módosítottuk.
+A nyilvános 0.14.0 csomag ettől a helyi javítástól még nem változott.

@@ -1,5 +1,5 @@
 ARTOFTOMWORKS CREATOR HUB GLOBAL
-0.14.1 — Nyilvános béta — 2026. november 19.
+0.17.0 — Nyilvános béta — 2026. november 24.
 
 Helyi alkotói felület képhez, videóhoz és utómunkához, ComfyUI-háttérrel.
 Válassz modellt, adj hozzá kompatibilis LoRA-kat, írd be a promptot, és
@@ -17,7 +17,9 @@ ELSŐ INDÍTÁS WINDOWSON
 1. A teljes Windows ZIP-et bontsd ki egy írható mappába. Ne a ZIP-ből és ne
    a Program Files könyvtárból indítsd.
 2. START_CREATOR_HUB.cmd. A Windows-csomag Node.js 24 x64 futtatót tartalmaz.
-   A megnyíló szerverablak maradjon nyitva használat közben.
+   A fekete ablak csak indulás közben látszik. Utána a szerver a háttérben
+   fut, az óra melletti tálcaikonnal (megnyitás, újraindítás, leállítás,
+   napló). Ugyanezt kínálja a jobb alsó ⏻ Hub gomb is.
 3. Válassz Kép vagy Videó módot és egy használatra kész helyi modellt.
    Generáláskor a Hub ellenőrzi és szükség esetén indítja a meglévő ComfyUI-t.
    A SwarmUI-nak nem kell futnia.
@@ -129,3 +131,119 @@ GitHub: https://github.com/artoftomworks-debug/artoftomworks-creator-hub
 
 SAMPLER, SCHEDULER ÉS FRISSÍTÉS
 A kapcsolók, modellbeállítások és biztonságos frissítés leírása: UPDATE_HU.txt.
+
+SZOFTVERFRISSÍTÉSEK ÉS NODE-CSOMAGOK
+A fejléc Frissítések gombján vagy a funkciókeresőben (Ctrl+K) érhető el.
+A Hub közzétett kiadásait (a Public Betát is) és a ComfyUI stabil kiadásait
+12 órás gyorsítótárral ellenőrzi. Ez a két kártya jelez és a kiadáshoz vezet;
+a Hubot és a ComfyUI-t nem telepíti automatikusan. A motorverziót a kiválasztott,
+kezelt ComfyUI-mappából olvassa. Külső vagy ismeretlen telepítésnél nem találgat.
+
+A node-csomagok kereshető, lapozható listát és frissítési szűrőt kaptak.
+Jelöld ki a csomagokat vagy az összes szűrt találatot, majd Kijelöltek frissítése.
+A listát áttekintve egyetlen Mentés és frissítés indítja a teljes csoportot.
+Csak ismert GitHub-forrású, változatlan helyi ág frissíthető. Minden csomagról
+ellenőrzött Git-mentés készül, majd csak egyenes ágon előrelépő frissítés történik.
+A helyi módosítások és a figyelmen kívül hagyott saját fájlok megmaradnak.
+Csomagonként látszik a folyamat, a kihagyás vagy hiba oka; a napló másolható.
+Megállítható az aktuális csomag befejezése után.
+
+Függőségfájl, telepítőszkript vagy almodul változásakor a csomag még a kód
+módosítása ELŐTT kimarad és külön jelzést kap. Nem fut pip vagy install.py,
+a Python-környezet nem változik. Az ilyen csomag külön telepítési ellenőrzést
+igényel; a kihagyást nem jelzi sikeres frissítésnek.
+
+Az eredményválasztóban az utolsó tíz művelet látható. A visszaállításhoz
+a pontosan frissített verzió, ugyanaz a forrás/ág és tiszta helyi fájlok kellenek.
+A mentések és a napló a data/node-update-backups és node-update-jobs.json
+helyen találhatók. A mentés a Gitben követett programkódot és történetét őrzi,
+nem a generált képeket vagy a Python-környezetet. A régi mentéseket nem törli
+automatikusan.
+
+A Motor újraindítása külön, felhasználói művelet, kizárólag üres feladatsornál
+és a Hub által felügyelt motoron. Külső motort a saját indítójával kell
+újraindítani. Csomagváltoztatás közben új generálás nem indítható.
+
+Az ellenőrzés legfeljebb húsz GitHub-forrást kérdez le egyszerre, háromperces
+kézi várakozással. A kimaradtak legközelebb előre kerülnek; a már igazolt
+eredmények a korábbi ellenőrzési dátummal megmaradnak. Alkalmazás előtt
+a helyi verziót, az ágat és a forrást újra ellenőrzi. A külön másolt csomagok,
+az ismeretlen forrás, a hálózati hiba és az eltérő fejlesztési ág külön jelzést
+kap. A naprakész állapot önmagában nem kompatibilitási ígéret minden workflow-ra.
+
+A pyproject.toml puszta projektverzió-változása nem blokkolja a frissítést;
+a tényleges függőség- és buildváltozás külön kezelendő. A befejezési összesítés
+mutatja a frissített, kihagyott és sikertelen csomagok számát. A helyi
+módosítások részletei felsorolják az érintett fájlokat.
+
+JELENETFOLYTATÁS
+A kész videó alatt Következő jelenetrész; jelenetsor, változatok és közös vágóasztal.
+Részletek: SCENE_CONTINUATION_HU.txt
+
+CIVITAI MODELLKERESÉS
+NSFW-besorolású modellek név szerinti kereséséhez kapcsold be az erre szolgáló
+jelölőt. Pontos modellhez civitai.com/civitai.red link vagy Civitai modell-ID
+is beilleszthető. A forrás hozzáférési feltételei és kulcskérése továbbra is
+érvényesek; a besorolás nem a modellcsaládot jelenti. A forrás Checkpoint
+címkéje mellett a Hub MOSS-nál generálómodell célmappát választhat.
+
+MODELLFORRÁS-KULCSOK MEGJEGYZÉSE
+A modellböngésző Forráshoz hozzáférési kulcs részében jelöld be a Megjegyzés
+ezen a Windows-fiókon kapcsolót, majd Kulcs mentése / használata. A Windows
+DPAPI titkosítja a kulcsot; újraindítás után azonos Windows-fiókkal betölti.
+Tárolás: data/model-credentials.dpapi.json, kizárólag védett tartalommal.
+Másik gépen/fiókkal újra meg kell adni. Más rendszeren csak munkameneti
+használat érhető el. A Kulcs elfelejtése törli a kiválasztott szolgáltatás
+kulcsát; a modelleket és letöltési feladatokat nem törli. A sikertelen feladat
+Folytatás / újrapróbálás gombja a kulcs mentése után használható. A forrás
+jogosultsági feltételeit a mentett kulcs sem helyettesíti.
+
+MODELLBÉLYEGKÉPEK
+A Hub letöltéskor a kiválasztott verzió előnézeti képét is megpróbálja elmenteni.
+Ha a forrás nem ad használható képet, a modell ettől még letöltődik.
+Saját kép utólag: modellkártya ☰ → Bélyegkép hozzáadása / cseréje, vagy Részletek.
+PNG, JPEG és WebP választható, legfeljebb 24 MiB; a Hub legfeljebb 640 pixeles
+JPEG-et ment a modell mellé. A saját bélyegkép elsőbbséget kap, automatikus
+forráskép-letöltés nem írja felül. A modell súlyfájlja nem módosul.
+
+ÚJ A 0.16-BAN ÉS A 0.17-BEN
+- Több modellel: ugyanaz a prompt több kép- vagy videómodellel (és
+  formátumban) egy indítással, sorozatsáv szünettel/folytatással/
+  megszakítással, rácsnézet (modellek × seedek), a végén opcionális helyi
+  MI-kiértékelés.
+- Kétlépcsős LTX 2.5 saját workflow-k (fél felbontású alap → 2× látens
+  felskálázás → finomítás). Bármely eredmény pontos workflow-ja elmenthető az
+  Előzményekből, vagy egy kattintással visszatölthető.
+- Jelenetek: „Következő jelenet” asszisztens, storyboard kisfilm-exporttal
+  (áttűnés, zene), karakterkönyv, változat-családfa.
+- Ötlettár (Alt+I): szöveg és kép, címkék; ötletből kép- vagy videóprompt,
+  vagy küldés a storyboardba.
+- Hang: hangterv (környezeti hang, zene, egy kimondott mondat) a hangot is
+  adó modellekhez (LTX 2.5, MiniMax H3); hangeszköz kész videókhoz (be- és
+  kiúsztatás, hangerő, hangerő-kiegyenlítés, háttérzene ducking-gal).
+- Kezdőkép-figyelő: a Generálás mellett jelzi, ha bent maradt kezdőkép;
+  indítás előtt csak akkor kérdez, ha a prompt sokat változott vagy a kép
+  régi. A „Több modellel” indítás is használja.
+- Kamera: tükrözött élő kép, 3 mp visszaszámlálás, három kép; kezdőképnek,
+  videóhoz, karakterkönyvbe vagy stílussal.
+- Témák és háttérkép (⚙ Beállítások), kényelmes nagyítás (A− / A+).
+- Vészkapcsoló (gomb a fejlécben vagy Ctrl+Alt+H): minden képet és videót
+  elmos, a lejátszást némítja, amíg vissza nem kapcsolod.
+- Önjavítás memóriahiánynál, automatikus memóriaürítés modellváltáskor,
+  ablak nélküli szerver tálcaikonnal és sok kisebb javítás.
+
+PROFILOK ÉS SZÜLŐI FELÜGYELET (OPCIONÁLIS, ALAPBÓL KI)
+⚙ → Profilok bekapcsolása. Az első profil a rendszergazda, övé minden eddigi
+adat. Minden profilnak saját jelszava, előzményei, piszkozata és ötletei vannak;
+a további profilok kimeneti almappába (Profil_<név>) is mentenek. Gyerekprofilnál csak a kiválasztott
+modellek használhatók, a LoRA és az MI-segítő külön engedélyezhető, a promptot
+többnyelvű szószűrő ellenőrzi. Ismert korlátok: a profilok közös generálási
+sort használnak, így egy gyerekprofil is megállíthatja; a fájlok a lemezen a
+közös kimeneti mappában vannak. A szülői felügyelet a Hub felületét védi; nem
+helyettesíti a Windows-fiókokat és a felügyeletet.
+
+KÍSÉRŐ WORKFLOW-K
+A workflows mappában önálló LTX 2.5 képből videó workflow-k vannak
+(Vázlat → Végleges és Simple, angolul és magyarul). ComfyUI-ban önállóan is
+futnak, a Hubban a Workflow betöltése gombbal tölthetők be. Lásd:
+workflows/README_HU.md.

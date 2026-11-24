@@ -1,5 +1,5 @@
 ARTOFTOMWORKS CREATOR HUB GLOBAL
-0.14.1 — Public Beta — 19 November 2026
+0.17.0 — Public Beta — 24 November 2026
 
 A local workspace for AI images, video and creative finishing, powered by
 ComfyUI. Choose a model, add compatible LoRAs, write your prompt and create
@@ -18,7 +18,9 @@ WINDOWS QUICK START
 1. Extract the entire Windows ZIP into a writable folder. Do not run inside
    the ZIP, and do not place it in Program Files.
 2. Run START_CREATOR_HUB.cmd. The Windows package includes Node.js 24 x64.
-   Keep the server window open while using the Hub.
+   The black window is visible only while the Hub starts. The server then
+   runs in the background with a tray icon next to the clock (open,
+   restart, stop, log). The ⏻ Hub button in the lower right offers the same.
 3. In your browser, choose Image or Video and a ready local model. On the
    first generation the Hub checks and starts the existing ComfyUI engine.
    SwarmUI does not have to run.
@@ -142,3 +144,116 @@ GitHub: https://github.com/artoftomworks-debug/artoftomworks-creator-hub
 
 SAMPLER, SCHEDULER AND UPDATING
 See UPDATE_EN.txt for independent override switches, model settings and safe updating.
+
+SOFTWARE UPDATE NOTIFICATIONS AND NODE PACKAGES
+Updates in the header and function search (Ctrl+K) opens one panel.
+Published Hub releases (including Public Beta) and stable ComfyUI releases
+are checked every 12 hours and cached locally. These two cards notify and
+link to release information; they do not install Hub or ComfyUI releases.
+The installed engine version comes from the selected managed ComfyUI folder.
+Unknown or external installations are marked unverified.
+
+Node packages have a searchable, paginated list and optional update filter.
+Select individual packages or all filtered packages, then Update selected.
+Review the list and choose Back up and update once for the whole batch.
+Only known GitHub repositories on a clean, unchanged local branch qualify.
+Each package gets a verified Git backup before downloading and applying a
+fast-forward update. Local edits and ignored user-file collisions are preserved.
+Progress, skips and failures are shown per package, with a copyable log.
+Stop after current package keeps the current operation intact.
+
+Changes to dependency files, installation scripts or submodules are skipped
+BEFORE changing package code. The Hub does not run pip or installation scripts
+and does not change the Python environment. Such packages need a separate
+installation review; a skipped package is not reported as updated.
+
+The last ten batch results are available in the result selector. Restore
+requires the exact installed commit, matching source/branch and clean files.
+Backups and logs are under data/node-update-backups and node-update-jobs.json.
+Backups contain tracked Git code/history, not generated media or Python
+environments. They are not deleted automatically when results leave the list.
+Restart engine is an explicit action after a successful update or restore,
+only for an idle engine managed by this Hub. External engines require their
+own launcher. Generation admission is blocked while packages are changing.
+
+Checks query up to 20 GitHub sources per batch with a three-minute cooldown.
+Deferred packages are prioritized next time; previous verified findings stay
+visible with their original check date until refreshed. Before applying any
+update, the local source, branch and commit are checked again.
+Copied packages, unknown sources, offline results and divergent histories
+are shown explicitly rather than guessed. Current is not a compatibility
+guarantee for every workflow.
+
+A project-version-only change in pyproject.toml is allowed; actual dependency
+and build-system changes remain gated. The completion summary counts updated,
+skipped and failed packages. Local modification details list affected files.
+
+SCENE CONTINUATION
+Next scene segment beneath the video; take selection and shared editing timeline.
+See SCENE_CONTINUATION_EN.txt.
+
+CIVITAI MODEL SEARCH
+Enable Include NSFW-classified models for those models in name searches.
+An exact civitai.com/civitai.red model link or numeric model ID also works.
+Source access requirements still apply. Rating is independent of model family.
+A Civitai Checkpoint label can still require a local diffusion-model destination
+for model-only MOSS weights.
+
+REMEMBERING MODEL-SOURCE KEYS
+In the model browser credential panel, enable Remember for this Windows
+account, then Save / use key. Windows DPAPI protects it; the same Windows
+account reloads it after restart. Only encrypted contents are stored in
+data/model-credentials.dpapi.json. Another account/machine must enter its
+own key. Other systems support session-only use. Forget key removes the
+selected provider key without deleting models or download jobs. Resume /
+retry the failed job separately after saving. Source access requirements
+still apply; saving a key does not prove its validity or permissions.
+
+MODEL THUMBNAILS
+The Hub tries to save the selected version’s preview image with each download.
+If no usable image is available, the model download still completes.
+Add your own image later: model card menu → Add / replace thumbnail, or Details.
+PNG, JPEG and WebP up to 24 MiB are accepted; the Hub saves a JPEG thumbnail
+with a maximum side of 640 pixels next to the model. Your custom thumbnail
+takes priority and is never replaced by automatic source previews.
+The model weight file is not modified.
+
+NEW IN 0.16 AND 0.17
+- Several models at once: the same prompt with several image or video models
+  (and formats) in one start, a series bar with pause/resume/cancel, a grid
+  view (models × seeds) and an optional local-AI ranking at the end.
+- Two-stage LTX 2.5 custom workflows (half-resolution base → 2× latent
+  upscale → refine) are accepted. Save the exact workflow of any result from
+  History, or load it back with one click.
+- Scene tools: next-scene assistant, storyboard with a short film export
+  (crossfades, music), character book, variation family tree.
+- Ideas box (Alt+I): text and images, tags, turn an idea into an image or
+  video prompt, or send it to the storyboard.
+- Sound: a sound plan (ambience, music, one spoken line) for models that
+  generate audio (LTX 2.5, MiniMax H3); a sound tool for finished videos
+  (fades, volume, loudness levelling, background music with ducking).
+- Start image guard: a chip next to Generate shows when a start image is
+  still loaded; before starting it asks only if the prompt has changed a lot
+  or the image is old. Also used by “Several models at once”.
+- Camera: mirrored live view, 3-second countdown, three shots; use one as a
+  start image, for video, in the character book or with a style.
+- Themes and backgrounds (⚙ Settings), comfortable zoom (A− / A+).
+- Privacy switch (header button or Ctrl+Alt+H): blurs every image and video
+  and mutes playback until switched back.
+- Self-healing on out-of-memory, automatic memory release on model change,
+  windowless server with tray icon, and many smaller fixes.
+
+PROFILES AND PARENTAL CONTROLS (OPTIONAL, OFF BY DEFAULT)
+⚙ → Enable profiles. The first profile becomes the administrator and owns all
+existing data. Each profile has its own password, history, drafts and ideas; additional
+profiles also save into an output subfolder (Profil_<name>). A child profile can be limited to selected
+models, with LoRAs and the AI assistant allowed separately and a multilingual
+word filter on prompts. Known limits: all profiles share one generation queue,
+so a child profile can stop it; files on disk stay in the shared output folder.
+Parental controls protect the Hub interface; they are not a substitute for
+Windows accounts or supervision.
+
+COMPANION WORKFLOWS
+The workflows folder contains standalone LTX 2.5 image-to-video workflows
+(Draft → Final and Simple, English and Hungarian). They run in ComfyUI on their
+own and can be loaded in the Hub via Load workflow. See workflows/README_EN.md.

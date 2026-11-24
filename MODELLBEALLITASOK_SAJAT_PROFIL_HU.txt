@@ -1,0 +1,34 @@
+﻿CREATOR HUB 0.13.10 — KISZÁMÍTHATÓ MODELLBEÁLLÍTÁSOK
+
+Az adatlap és a példaképek beállításai többé nem töltődnek be automatikusan.
+Egy példa nem tartalmazza feltétlenül a teljes ComfyUI-workflow-t, a külön
+sampling-patcheket, LoRA-kat, finomítót vagy más kiegészítőt.
+
+Alapmód: Saját beállítások modellenként. A saját lépésszám, CFG, sampler,
+scheduler, denoise és guidance az adott modellhez, háttércímhez és Kép/Videó
+módhoz tartozó profilba kerül, a projektben megőrizve. Visszatéréskor ezt
+használja. Új modellcsaládnál a meglévő lépésszám megmarad, a sampler-páros
+és CFG a közös automatikus gráf kiinduló értéke. Az új kép denoise-ja 1.
+A Jelenlegi értékek megtartása mód tudatos kézi beállításokat visz tovább.
+
+Ajánlás ellenőrzése: csak megmutatja a talált értékeket és forrást.
+Ajánlás alkalmazása: csak külön kattintásra módosítja az értékeket.
+Kiinduló értékek: a közös modellcsalád-alaphoz tér vissza.
+Ezek kiinduló értékek, nem minden modellváltozatra bizonyított optimumok.
+Különösen egy gyorsított/finomhangolt modell teljes gyári workflow-ja eltérhet.
+
+A korábbi automatikus adatlapértékeket az első frissítés egyszer ellenőrzi.
+Az ajánlásból változatlanul maradt eltérő értékeket visszaállítja a kiinduló
+értékekre. A korábbról örökölt FLUX/Krea LCM-párt is helyreállítja. A változást
+kiírja. Kifejezetten kézi módban mentett tervhez nem nyúl. A működő egyéb
+kézi eltéréseket megőrzi. Az ellenőrzés új gráfot készít, nem indít generálást.
+
+ÁTVÉTEL: ugyanaz az asztali Hub-indító, majd Ctrl+F5. Verzió: 0.13.10.
+195/195 automatikus teszt, külön FLUX-profil és MOSS-ajánlás böngészős
+próba sikeres. Ellenőrzött az ajánlás változtatás nélküli lekérdezése,
+külön alkalmazása, visszaállítás, modellenként eltérő profilok újratöltése,
+régi 6 lépés/LCM/Karras javítása és a látható értékekkel egyező gráf.
+Valódi GPU-generálást a módosítás tesztje nem indított.
+Személyes data/média közvetlenül nem változott; a régi terv egyszeri
+helyreállítása majd a frissített felületen történik, látható jelzéssel.
+A nyilvános GitHub/Civitai 0.14.0 továbbra is külön javítókiadásra vár.

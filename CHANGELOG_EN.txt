@@ -1,3 +1,189 @@
+ARTOFTOMWORKS CREATOR HUB — 0.17.0
+24 November 2026
+
+Public update after 0.14.1. Includes all 0.15.x and 0.16 work.
+
+- Several models at once for image and video: models × formats in one start,
+  favourites/family quick-pick, a “trial” mode for video, series bar with
+  pause, resume and cancel, grid view (models × seeds), optional local-AI
+  model suggestion and ranking.
+- Two-stage LTX 2.5 custom workflows supported. Save or reload the exact
+  workflow of any History result.
+- Scene continuation, next-scene assistant, storyboard with short-film export,
+  character book, variation family tree, “Same, but…” buttons, morning picks.
+- Ideas box (Alt+I) with images, tags and one-click prompts.
+- Sound plan for audio-capable video models (LTX 2.5, MiniMax H3) and a sound
+  tool for finished videos (fades, levelling to −16 LUFS, music with ducking).
+- Start image guard, also for “Several models at once”.
+- Camera capture (mirror, countdown, three shots) for start images and styles.
+- Themes, background images and a comfortable zoom.
+- Privacy switch (Ctrl+Alt+H) that blurs all media.
+- Optional profiles with passwords and per-profile data; optional parental
+  controls (allowed models, LoRA/assistant permissions, word filter).
+- Civitai/Hugging Face model search improvements, model thumbnails,
+  encrypted remembered model-source keys (Windows DPAPI).
+- Out-of-memory self-healing, automatic memory release on model change,
+  windowless server with tray icon, ⏻ Hub menu (restart, stop, log).
+- Companion LTX 2.5 workflows (Draft → Final, Simple; EN and HU) in the
+  workflows folder.
+- Fixes: removing a start image no longer leaves an automatic plan demanding
+  one; image generation without a start image always uses full denoise;
+  queue removal removes only the selected plan; draft saving is robust against
+  Windows file locks; many interface and translation fixes in all eight
+  languages.
+
+Not tested in this release: real webcam capture on Windows, profile mode and
+parental controls on the release machine, and real GPU generation quality
+for every model family. See VALIDATION_EN.txt.
+
+ARTOFTOMWORKS CREATOR HUB — 0.15.4
+21 November 2026
+
+- Scene continuation now uses the actual final decoded video frame.
+- Rounded container durations no longer cause empty end-of-file seeks and
+  ENOENT errors for a temporary PNG that was never produced.
+- Last-frame extraction also handles audio tracks outlasting the video.
+- Ordinary timestamp frame requests retry safely at rounded endpoints.
+- Original videos and start images remain unchanged; no regeneration needed.
+- Deferred audio-field, H3-filename and panel-layout requests are not included.
+
+ARTOFTOMWORKS CREATOR HUB — 0.15.3
+21 November 2026
+
+- Downloads also save the selected model version’s preview image when available.
+- Civitai version images and explicit Hugging Face / GitHub image files supported.
+- Add or replace a custom thumbnail later from the model card menu or details.
+  Uploaded images are resized to JPEG with a maximum side of 640 pixels.
+- Custom thumbnails take priority and are never overwritten automatically.
+- Missing or failed preview downloads never fail a successful model download.
+- Thumbnail changes appear immediately without stale browser cache.
+- Restart the Hub backend to enable the new save action.
+
+ARTOFTOMWORKS CREATOR HUB — 0.15.2
+21 November 2026
+
+- History: first and last page buttons, direct page number jump with Enter or Go.
+  Filters are preserved and page numbers stay within the available range.
+- Model cards: direct menu for selection, favorites, file location and deletion.
+  One review dialog offers trash or permanent deletion with the exact file path
+  and explicit confirmation. Bulk selection remains available.
+- Image preview zoom: prominent fixed percentage badge at the lower right
+  of the canvas and a stronger header readout. Updates on wheel zoom, 1:1
+  and fit-to-screen; 100% is original image size. Frontend-only update.
+- Model-source keys can be remembered with Windows-account-bound encryption
+  and reloaded after Hub restarts. Session-only use remains available.
+- Explicit loaded / encrypted-and-saved / missing / locked states and a forget
+  action. Credentials are forwarded only to the selected provider's trusted hosts.
+- Authentication-failed downloads link directly to the relevant key panel.
+  Retry remains a separate action after saving the key.
+- Uses Windows DPAPI CurrentUser with provider-bound protected contents.
+  No token in command arguments, logs, plaintext JSON or status responses;
+  no plaintext fallback on protection/unlock failure. Hidden helper process.
+- Eight interface languages and real Windows protection/browser verification.
+- A zero-byte download now shows 0 B rather than an unknown-size label.
+
+PREVIOUS RELEASE
+
+ARTOFTOMWORKS CREATOR HUB — 0.15.1
+21 November 2026
+
+- Visible, browser-persisted option to include NSFW-classified Civitai models
+  in name searches. Disabled by default; restricted model thumbnails stay hidden.
+- civitai.red model-page links and numeric model IDs resolve through the
+  existing civitai.com API and display the actual model name. Trusted download
+  and credential-forwarding hosts are unchanged.
+- Pagination preserves rating/type filters; changing filters starts a new search.
+- MOSS files classified by Civitai as checkpoints remain available under the
+  Checkpoint filter even when their correct local destination is diffusion_models.
+- Live API verified Jib Mix Moss Realistic by name and direct red-domain link,
+  including V1/V2/V3 files. No actual model download was submitted.
+
+PREVIOUS RELEASE
+
+ARTOFTOMWORKS CREATOR HUB — 0.15.0
+21 November 2026
+
+- Next scene segment directly beneath a finished video, using its last
+  decoded frame and actual saved generation recipe.
+- Separate event, camera, audio, duration and seed controls. Loading a plan
+  never starts inference; cancelling preparation preserves the current draft.
+- Horizontal sequence with review, per-segment takes and regeneration from
+  the original start image or predecessor frame. Existing results remain intact.
+- Source relationships persist in run records, take choices in a local file.
+  Descendants of an incompatible take are not silently spliced into the sequence.
+- Send selected segments together to the real video studio timeline;
+  rendering/export remains an explicit user action.
+- H3 and supported simple LTX text/image sources, with an automatic start-image
+  branch where needed. Distinct LTX video/audio CFG values remain intact and
+  repeated continuations reuse the image scaler.
+- Eight interface languages. Real CPU frame extraction/import and browser
+  validation with simulated inference; no live GPU job was submitted.
+
+PREVIOUS RELEASE
+
+ARTOFTOMWORKS CREATOR HUB — 0.14.5
+20 November 2026
+
+- A project-version-only change in pyproject.toml no longer blocks node updates.
+  Real dependency, build-system and installation changes remain gated.
+- Local changes show their affected files in the review and result details;
+  custom modifications are preserved.
+- A prominent completion summary counts updated, skipped and failed packages,
+  with direct access to results so a finished batch does not look stalled.
+
+PREVIOUS RELEASE
+
+ARTOFTOMWORKS CREATOR HUB — 0.14.4
+20 November 2026
+
+- Compact, searchable node update list with pagination, filtered select-all
+  and preserved selections; new-change counts have clear labels.
+- Review one selected batch, then create verified Git backups and apply
+  fast-forward code updates. Progress and results are shown per package.
+- Preserve local changes; skip dependency/script/submodule changes before
+  changing code. No pip or installation-script execution.
+- Restore prior package code from the last ten batch records; explicit idle-only
+  restart for the Hub-managed engine. Stop after current package is available.
+- Block generation and engine reconfiguration during package changes.
+  The launcher also waits for an active node update before replacing the Hub.
+- Deferred source checks retain previous findings and their check dates.
+  Software and node-check cooldowns are independent.
+- All eight languages. Real Git backup/update/restore tests and browser batch
+  interaction checks passed; no installed user node package was updated.
+
+PREVIOUS RELEASE
+
+ARTOFTOMWORKS CREATOR HUB — 0.14.3
+20 November 2026
+
+- Header update badge and compact details dialog, available in all eight
+  interface languages and through function search.
+- Separate installed/available Hub and stable ComfyUI versions, plain-text
+  release notes and official source links. Checks are cached for 12 hours.
+- Optional manual checks for GitHub-backed node packages, with bounded
+  batches, branch-aware comparisons and three-minute manual cooldowns.
+- Offline, unknown and divergent sources remain explicit. Notification only:
+  no package installation, Git fetch/pull, engine stop or restart.
+- 213 automated tests passed; real browser checks cover eight languages,
+  small-screen layout, safe release notes and unchanged generation settings.
+  No GPU generation was submitted.
+
+PREVIOUS RELEASE
+
+ARTOFTOMWORKS CREATOR HUB — 0.14.2
+19 November 2026
+
+- Newly generated image filenames include the effective model basename,
+  without model-file extensions or folder paths. Names are capped at 64
+  characters and sanitized for Windows and ComfyUI filename formatting.
+- Uses the final graph after model overrides, including custom workflows
+  and series with different models. Exported workflows use the same prefix.
+- Daily Images folders and unique series identifiers remain. Existing
+  files and previously prepared jobs retain their original names.
+- 205/205 automated tests passed. No new GPU generation was submitted.
+
+PREVIOUS RELEASE
+
 ARTOFTOMWORKS CREATOR HUB GLOBAL — 0.14.1 BUGFIX RELEASE
 19 November 2026
 

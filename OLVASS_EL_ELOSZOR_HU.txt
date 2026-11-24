@@ -1,7 +1,7 @@
-ARTOFTOMWORKS CREATOR HUB GLOBAL 0.14.1
+ARTOFTOMWORKS CREATOR HUB GLOBAL 0.17.0
 
 Bontsd ki a teljes Windows ZIP-et. START_CREATOR_HUB.cmd.
-A szerverablak maradjon nyitva. Meglévő, működő ComfyUI saját
+Utána a háttérben fut (tálcaikon az óra mellett). Meglévő, működő ComfyUI saját
 Pythonnal, modellekkel és node-okkal szükséges; SwarmUI nem kell.
 Nyelvváltó: földgömb a fejlécben.
 

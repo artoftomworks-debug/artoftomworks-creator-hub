@@ -1,0 +1,25 @@
+.softwareUpdatesBadge{white-space:nowrap;font-size:13px;position:relative}
+.softwareUpdatesBadge.hasUpdates{border-color:#e6b76a;color:#ffe0a0;background:#4d371f}
+.softwareUpdatesBadge.hasUpdates::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:#ffd17e;margin-right:7px}
+.softwareUpdatesDialog{box-sizing:border-box;width:min(820px,94vw);max-height:86dvh;padding:22px;border:1px solid #62828e;border-radius:14px;color:#e7f1f5;background:#102630;overflow:auto}
+.softwareUpdatesDialog::backdrop{background:#000a}
+.softwareUpdatesHeading,.softwareUpdateCardHeading{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.softwareUpdatesHeading{position:sticky;top:-22px;background:#102630;padding:8px 0;z-index:1}
+.softwareUpdatesHeading h2{margin:0;font-size:23px}.softwareUpdatesHeading button{flex:none}
+.softwareUpdatesNotice{border-left:3px solid #e6b76a;padding:9px 12px;background:#1b3641}
+.softwareUpdateCard{padding:13px 15px;margin:12px 0;border:1px solid #365561;border-radius:9px;background:#0b202a}
+.softwareUpdateCard[data-status=update]{border-color:#e6b76a}.softwareUpdateCard[data-status=update] .softwareUpdateState{color:#ffd17e}
+.softwareUpdateCardHeading{align-items:baseline;flex-wrap:wrap;gap:6px 12px}.softwareUpdateCardHeading strong{overflow-wrap:anywhere}
+.softwareUpdateState{font-size:13px;color:#b9cdd5}.softwareUpdateError{color:#efc893;font-size:13px}
+.softwareUpdateCard p{margin:7px 0}.softwareUpdateCard a{font-size:14px}.softwareUpdateCard details{margin-top:12px}
+.softwareReleaseNotes{font:13px/1.5 system-ui,sans-serif;white-space:pre-wrap;overflow-wrap:anywhere;max-height:260px;overflow:auto;background:#071820;padding:12px;border-radius:6px}
+.softwareUpdatesDialog .inline{flex-wrap:wrap;gap:8px}.softwareUpdatesDialog .muted{font-size:14px;line-height:1.45}
+.nodeUpdateControls{position:sticky;top:48px;z-index:2;background:#102630;padding:8px 0;border-bottom:1px solid #365561}
+.nodeUpdateOverview{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;margin:12px 0;border:1px solid #729987;border-radius:8px;background:#17382e;font-size:14px}.nodeUpdateOverview[data-state=attention]{border-color:#e6b76a;background:#3d321f}.nodeUpdateOverview button{flex:none}.nodeUpdateProgress{scroll-margin-top:160px}
+.softwareUpdatesHeading{z-index:3}.nodeUpdateTools{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:9px}.nodeUpdateTools input[type=search]{flex:1;min-width:180px}
+.nodeUpdateTools .check{display:flex;align-items:center;gap:6px}.nodeUpdateTools input[type=checkbox],.nodeUpdateRow input[type=checkbox]{width:19px;height:19px;flex:none;accent-color:#f0c584}
+.nodeUpdateToolbar button{padding:8px 11px;font-size:13px}.nodeUpdateRow{display:grid;grid-template-columns:20px minmax(0,1fr) auto;align-items:center;gap:11px;padding:11px 10px;border-bottom:1px solid #294651}
+.nodeUpdateRow[data-status=update]{background:#152e38}.nodeUpdateRowText{min-width:0}.nodeUpdateRowText strong{display:block;overflow-wrap:anywhere;font-size:14px}.nodeUpdateRowText small{display:block;margin-top:4px;font-size:12px}.nodeUpdateRow a{font-size:12px;max-width:150px}
+.nodeUpdateReview{padding:12px;margin:14px 0;border:1px solid #e6b76a;border-radius:8px}.nodeUpdateReview button{margin-right:8px}.nodeUpdateReviewRows{max-height:200px;overflow:auto;font-size:13px}
+.nodeUpdateProgress{border-top:1px solid #58727d;margin-top:18px;padding-top:5px}.nodeUpdateProgress>button{margin:0 8px 8px 0}.nodeUpdateResult{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;padding:9px;border-bottom:1px solid #365561;font-size:13px}.nodeUpdateResult strong{overflow-wrap:anywhere}.nodeUpdateResult>p,.nodeUpdateResult>details{flex-basis:100%;margin:3px 0}.nodeUpdateResult[data-state=updated]>span{color:#a9e3bf}.nodeUpdateResult[data-state=failed]>span{color:#ffaaaa}.nodeUpdateProgress>div{max-height:300px;overflow:auto}
+@media(max-width:600px){.softwareUpdatesDialog{padding:14px}.softwareUpdatesHeading{top:-14px}.softwareUpdatesBadge{font-size:12px}.softwareUpdatesHeading h2{font-size:20px}}

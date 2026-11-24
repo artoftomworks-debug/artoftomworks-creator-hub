@@ -1,0 +1,36 @@
+JELENETFOLYTATÁS – CREATOR HUB 0.15.0
+
+1. Nyiss meg egy kész videót a generálási eredménynél. Közvetlenül alatta:
+   „Következő jelenetrész”. A jelenetsor kártyáin is van ilyen gomb.
+2. A Hub kiolvassa az utolsó dekódolható képkockát és a kiválasztott videó
+   mentett modelljét, LoRA-it, erősségeit és mintavételezési beállításait.
+   A most éppen szerkesztett, esetleg más modellű tervet még nem módosítja.
+3. Add meg az új történést. Válassz kamerát, és igény szerint hangutasítást,
+   hosszt vagy seedet. A kamera utasítása a meglévő kamerakezelőben szerkeszthető.
+   A hangutasítás szövegként, Audio: bekezdésben kerül a pozitív promptba.
+   A választott modell/workflow képességeitől függ, milyen hangot tud generálni.
+4. „Terv betöltése az alkotófelületre”, ellenőrzés, majd Generálás indítása.
+   Az átvétel vagy a panel bezárása önmagában nem generál.
+5. A kész folytatás megjelenik a vízszintes jelenetsoron. Kattints az előnézetére
+   a nagy nézethez; válaszd ki a kívánt változatot a kártyán.
+6. „Új változat ebből a részből”: ugyanazt a forrást és kezdőképet használja,
+   a korábbi történés/kamera betöltődik, a seed alapból eggyel nő. Semmit nem ír
+   felül. Az első rész az eredeti kezdőképből, a többi az előző rész utolsó
+   képkockájából indul. Az eredeti kezdőképhez a motor elérhetősége szükséges lehet.
+7. „Összeállítás a videóstúdióban”: a kiválasztott, egymáshoz tartozó részek
+   sorrendben a vágóasztalra kerülnek, a hangjuk is megmarad. Itt vághatsz,
+   állíthatsz hangerőt, majd külön indíthatod az exportot. A megnyitás nem renderel.
+
+Legfeljebb 24 rész alkothat egy sort. Ha egy korábbi rész másik változatára
+váltasz, a másik ághoz tartozó későbbi részek nem kerülnek automatikusan utána;
+megmaradnak, és az eredeti ágra visszaváltva újra elérhetők.
+A forrás videók és a data mappa egyaránt szükségesek az összes kapcsolat mentéséhez.
+A data/scene-sequences.json a kiválasztásokat, a data/runs naplók a kapcsolatokat
+és a generálási recepteket őrzik.
+
+H3 és a Hub által felismert egyszerű LTX ágak támogatottak. A csak szöveges
+szabványos ág kap kezdőkép-bemenetet, a modell és mintavételezés megmarad.
+Összetett, többfázisú vagy kizárólag utómunkával készült forrásnál a program
+jelzi, ha nem talál biztonságosan újrahasználható receptet. Ilyenkor az eredeti
+képgenerált videóváltozatból indíts. A képkocka átadása a jelenet kiinduló
+megjelenését rögzíti; a mozgás folytatását az új prompttal érdemes pontosítani.

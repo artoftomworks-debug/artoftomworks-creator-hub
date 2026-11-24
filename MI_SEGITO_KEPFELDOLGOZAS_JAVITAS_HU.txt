@@ -1,0 +1,25 @@
+﻿CREATOR HUB 0.13.8 — VALÓDI KÉPFELDOLGOZÁS AZ MI-SEGÍTŐBEN
+
+Valódi DeepSeekkel reprodukáltuk a hibát: egy piros kört és sárga négyzetet
+ábrázoló próbánál a korábbi generate kérés a beírt hegyi tóról válaszolt.
+A multimodális chat kérés ugyanazzal a modellel helyesen leírta a képet.
+A javítás a képet a felhasználói üzenethez köti, a feladatot külön közli,
+és a meglévő szöveget csak opcionális kiegészítésként adja át.
+Ha Képből prompt módban a válasz pusztán a forrásszöveg másolata, nem
+jelöli késznek és nem engedi alkalmazni képleírásként.
+A korábbi automatikus kontextuskeret és megszakítás/memóriaátadás megmarad.
+
+A háttér-MI indítása többé nem kér külön Windows-konzolt (detached:false,
+windowsHide:true, shell:false, fájlba vezetett naplók). A már máshonnan futó
+Ollamát továbbra is újrahasználja. A felhasználó által látott minden egyes
+konzolfelvillanás eredetét még nem igazoltuk; az új indítás szemmel látható
+hatása a saját Windows-asztalon ellenőrizendő, nem tekinthető teljesen
+igazolt javításnak az összes lehetséges külső alfolyamatra.
+
+ÁTVÉTEL: futó munka után ugyanaz az asztali Hub-indító, majd Ctrl+F5.
+A fejlécben 0.13.8 legyen. Képből prompt feladat és kezdőkép használata.
+Ellenőrzés: 190/190 automatikus teszt, böngészős MI-regresszió és valódi
+DeepSeek próba a javított szolgáltatáson át. Piros kör/sárga négyzet/kék
+háttér helyesen felismerve kb. 11 másodperc alatt, GPU-val; memória felszabadult.
+Ez egy egyszerű próba, nem általános minőségi vagy sebességi garancia.
+Személyes adatok és média nem változott. A nyilvános 0.14.0 még nem frissült.

@@ -1,0 +1,33 @@
+SCENE CONTINUATION – CREATOR HUB 0.15.0
+
+1. Show a completed generated video. Choose Next scene segment immediately
+   below it, or use the button on a sequence card.
+2. The Hub reads the last decoded frame and the selected video's actual saved
+   model, LoRAs, strengths and sampling graph. Your current draft stays untouched.
+3. Describe the next event, select a camera and optionally specify audio,
+   duration and seed. Audio direction becomes an Audio: paragraph in the positive
+   prompt; sound generation depends on the selected model/workflow capabilities.
+4. Load plan into creation view, review it, then explicitly start generation.
+   Loading or closing the preparation panel never submits inference.
+5. Finished continuations appear in the horizontal sequence. Open the preview
+   for a larger view and choose a take on each card.
+6. New take of this segment reuses its original starting frame and settings,
+   restores the event/camera and defaults to seed +1. Existing takes are kept.
+   The first segment reuses its original input image; later segments use their
+   predecessor's last frame. Retrieving the original input may need the engine.
+7. Assemble in video studio sends the coherent selected sequence to the real
+   editing timeline, including source audio. Trim, adjust sound and explicitly
+   export there. Opening the timeline does not render anything.
+
+Up to 24 segments per sequence. Changing an earlier take does not attach a
+later segment generated from a different predecessor. Those branches remain
+available when their original take is selected again.
+Keep both generated source files and the Hub data folder. Selection is stored
+in data/scene-sequences.json; relationships and recipes live in data/runs.
+
+H3 and supported simple LTX graphs are supported. Standard text-only sources
+receive a start-image branch while preserving model and sampling settings.
+Complex multi-stage or postprocessing-only sources may lack a reusable recipe;
+use the original generated video take in that case. The transferred frame
+anchors the starting appearance; describe the desired continuing motion in the
+new prompt. Each segment is generated separately, including any model audio.

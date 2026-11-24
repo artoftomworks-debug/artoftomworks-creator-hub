@@ -1,0 +1,28 @@
+// 0.16 DEV — „varázslatos” funkciók: első kép, értesítés, reggeli válogatás, karakterkönyv, kisfilm, családfa
+import test from 'node:test';import assert from 'node:assert/strict';
+import {mkdtemp} from 'node:fs/promises';import os from 'node:os';import path from 'node:path';
+globalThis.localStorage??={getItem:()=>null,setItem(){},removeItem(){}};
+const {pickModel}=await import('../first-image-ui.mjs');
+const {finishedEvents}=await import('../notify-ui.mjs');
+const {shouldOffer}=await import('../morning-ui.mjs');
+import {pickBest,analyzeTaste} from '../taste.mjs';
+import {cleanCharacter,createCharacters} from '../characters.mjs';
+import {filmPlan,xfadeGraph,fadeFor} from '../storyboard-film.mjs';
+import {cleanBoard,shotVideoProject,videoIndexOf,shotIndexOf} from '../storyboard-model.mjs';
+const {familyTree}=await import('../history-batch-ui.mjs');
+test('first image: favourite first, then fast families',()=>{assert.equal(pickModel([{name:'a',family:'flux1'},{name:'b',family:'sdxl'}]).name,'b');assert.equal(pickModel([{name:'a',family:'flux1',favorite:true},{name:'b',family:'sdxl'}]).name,'a');assert.equal(pickModel([]),null);});
+test('notify: only transitions, batch once when all done',()=>{const prev=new Map([['1','running'],['2','queued'],['3','running'],['4','complete']]);
+ const ev=finishedEvents(prev,[{id:'1',state:'complete',title:'A'},{id:'2',state:'complete',batch:{id:'b',label:'Cmp'}},{id:'3',state:'running',batch:{id:'b'}},{id:'4',state:'complete'}]);assert.deepEqual(ev.map(e=>e.kind),['done']);
+ const ev2=finishedEvents(new Map([['2','complete'],['3','running']]),[{id:'2',state:'complete',batch:{id:'b',label:'Cmp'}},{id:'3',state:'failed',batch:{id:'b',label:'Cmp'}}]);assert.equal(ev2.length,1);assert.equal(ev2[0].kind,'partial');assert.equal(ev2[0].count,1);});
+test('morning: away long enough and many new',()=>{assert.equal(shouldOffer({now:10*3600e3,lastSeen:1,newCount:12}),true);assert.equal(shouldOffer({now:10*3600e3,lastSeen:1,newCount:3}),false);assert.equal(shouldOffer({now:1000,lastSeen:1,newCount:50}),false);});
+test('morning pick: favours the liked model; diverse fallback without enough ratings',()=>{const rated=[...Array(6)].map((_,i)=>({rating:i<3?5:2,model:i<3?'good.safetensors':'meh.safetensors',prompt:'portrait of a woman',width:768,height:1344}));const a=analyzeTaste(rated);
+ const rows=[{id:'x',model:'meh.safetensors',prompt:'portrait',created:2},{id:'y',model:'good.safetensors',prompt:'portrait',created:1}];assert.equal(pickBest(a,rows,1).picks[0].id,'y');
+ const r=pickBest(analyzeTaste([]),[{id:'1',model:'a',created:3},{id:'2',model:'a',created:2},{id:'3',model:'b',created:1}],2);assert.equal(r.personal,false);assert.deepEqual(r.picks.map(p=>p.id),['1','3']);});
+test('character book: validation, save, replace by name, delete',async()=>{assert.throws(()=>cleanCharacter({name:'',image:'data:image/png;base64,AAAA'}),/nevet/);assert.throws(()=>cleanCharacter({name:'Lili',image:'x'}),/arcképe/);
+ const root=await mkdtemp(path.join(os.tmpdir(),'cb-'));const cb=createCharacters({root});const a=await cb.save({character:{name:'Lili',image:'data:image/png;base64,AAAA',weight:2}});await cb.save({character:{name:'lili',image:'data:image/png;base64,BBBB'}});
+ const l=(await cb.list()).characters;assert.equal(l.length,1);assert.equal((await cb.get(l[0].id)).character.image,'data:image/png;base64,BBBB');assert.equal(l[0].weight,0.9);await cb.remove({id:l[0].id});assert.equal((await cb.list()).characters.length,0);assert.ok(a.character.id);});
+test('film: chosen take, else newest; missing scenes reported',()=>{const b=cleanBoard({name:'Eső',shots:[{text:'a',video:'v1'},{text:'b'},{text:'c'}]});assert.equal(videoIndexOf(shotVideoProject(b,1),b),1);assert.equal(shotIndexOf(shotVideoProject(b,1),b),-1);
+ const vids=[{id:'v1',project:shotVideoProject(b,0),mode:'video',created:1},{id:'v2',project:shotVideoProject(b,0),mode:'video',created:5},{id:'v3',project:shotVideoProject(b,1),mode:'video',created:2},{id:'v4',project:shotVideoProject(b,1),mode:'video',created:9}];
+ const p=filmPlan(b,vids);assert.deepEqual(p.clips,[{index:0,id:'v1'},{index:1,id:'v4'}]);assert.deepEqual(p.missing,[2]);});
+test('film: crossfade offsets and total length',()=>{const g=xfadeGraph([5,5,4],0.5);assert.match(g.graph,/offset=4\.500\[v1\]/);assert.match(g.graph,/offset=9\.000\[vout\]/);assert.match(g.graph,/acrossfade=d=0\.500\[aout\]/);assert.equal(g.length,13);assert.equal(xfadeGraph([5],0.5),null);assert.ok(fadeFor([1,5])<=0.34);});
+test('family tree: parents from the set, others become roots',()=>{const t=familyTree([{id:'a',created:1},{id:'b',parentIds:['a'],created:2},{id:'c',parentIds:['b'],created:3},{id:'d',parentIds:['zz'],created:4}]);assert.deepEqual(t.map(n=>n.e.id),['a','d']);assert.equal(t[0].children[0].children[0].e.id,'c');});

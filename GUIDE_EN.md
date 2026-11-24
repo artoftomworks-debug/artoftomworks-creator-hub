@@ -4,7 +4,7 @@ You have a model you like, a prompt in mind and a few LoRAs worth trying. What y
 
 That is the idea behind **ArtofTomworks Creator Hub Global**: a local workspace for images, video and creative finishing, with ComfyUI doing the generation in the background. You can open the graph editor whenever you need it, while everyday work happens in the Hub.
 
-This guide takes you through a first image, a useful series of variations and the next steps toward video. Version 0.14.1 is a public beta.
+This guide takes you through a first image, a useful series of variations and the next steps toward video. Version 0.17.0 is a public beta.
 
 ## Who is it for?
 

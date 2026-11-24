@@ -47,6 +47,10 @@ export function createAutomatic({getObjects,fetchImpl,library}){
   for(const [type,key,folder]of [['CheckpointLoaderSimple','ckpt_name','checkpoints'],['UNETLoader','unet_name','diffusion_models']])for(const name of choices(objects,type,key))models.push({id:folder+'|'+name,name,folder,type});
   let next=0;await Promise.all(Array.from({length:4},async()=>{while(next<models.length){const m=models[next++];Object.assign(m,await profile(backend,m.folder,m.name));m.mode=['h3','ltx'].includes(m.family)?'video':'image';m.supported=supported.has(m.family)&&(m.family==='ltx'?m.type==='UNETLoader'&&m.variant==='ltx25':m.family==='h3'?m.type==='UNETLoader':m.family==='moss'?['UNETLoader','CheckpointLoaderSimple'].includes(m.type):['sd1','sd2','sdxl'].includes(m.family)?m.type==='CheckpointLoaderSimple':true);m.reason=m.supported?'':'Ehhez a családhoz még nincs automatikus összeállítás, vagy a fájl betöltőtípusa nem megfelelő. Saját workflow továbbra is használható.';}}));
   for(const m of models){m.status=m.supported?'ready':'unsupported';m.missing=[];if(m.supported&&m.type==='CheckpointLoaderSimple'&&['flux1','krea2'].includes(m.family)&&(!m.embeddedClip||!m.embeddedVae)){m.status='unsupported';m.reason='Ez nem igazolt teljes checkpoint. A külön generálómodell betöltőjével és megfelelő kódolókkal, vagy saját workflow-val használható.';continue;}if(!m.supported){m.reason=m.conflict?'A fájl metaadata és belső szerkezete eltérő családot jelez. Ellenőrizd a modell forrását.':['h3','ltx'].includes(m.family)&&m.type==='CheckpointLoaderSimple'?'Ehhez a '+m.family+' modellhez a generálómodell-betöltő szükséges. Ez a bejegyzés a checkpoint-ágból érkezett; ez nem hiányzó kiegészítőt jelent.':m.family?'A '+m.family+' családot felismerem, de ehhez a betöltési ághoz még nincs automatikus támogatás.':'A modellcsalád nem igazolható a fájl adataiból. A modell részletei és a forrásoldal segíthetnek.';continue;}const roles=m.family==='ltx'?['ltxClip','ltxVae','ltxAudio']:m.family==='moss'?['mossClip','mossVae']:m.family==='h3'?['h3Clip','h3Vae','h3Audio']:m.family==='krea2'&&m.type==='UNETLoader'?['kreaClip','kreaVae']:m.family==='flux1'&&m.type==='UNETLoader'?['fluxClip','fluxT5','fluxVae']:[];for(const role of roles)try{pick(role.toLowerCase().includes('clip')||['fluxT5'].includes(role)?choices(objects,'CLIPLoader','clip_name'):choices(objects,'VAELoader','vae_name'),role);}catch{m.missing.push({role,names:aliases[role],query:aliases[role][0]});}if(m.family==='ltx'){const required=['EmptyLTXVLatentVideo','LTXVEmptyLatentAudio','LTXVConcatAVLatent','LTXVSeparateAVLatent','LTXVAudioVAEDecode','LTXVConditioning','LTXVDualCFGGuider'];const absent=required.filter(t=>!objects[t]);if(absent.length){m.status='backend-update';m.reason='Hiányzó LTX motorfunkció: '+absent.join(', ');continue;}}if(m.family==='moss'){const typeSpec=choices(objects,'CLIPLoader','type');if(!objects.EmptyFlux2LatentImage||typeSpec.length&&!typeSpec.includes('moss_image')){m.status='backend-update';m.reason='A telepített ComfyUI még nem kínálja a MOSS kódolóját vagy a Flux2 látens képet. A motor frissítése szükséges.';continue;}}if(m.missing.length){m.status='missing-components';m.reason='Hiányzó vagy nem egyértelmű kiegészítők: '+m.missing.map(r=>r.names.join(' / ')).join('; ')+'. A modellböngészőben megkeresheted őket.';}else m.reason='Használatra kész.';}
+  // 0.16 DEV: the same H3/LTX file is often visible both in diffusion_models (works) and in checkpoints (cannot work).
+  // Hide the checkpoint-branch twin when a working entry for the same file exists, so picking the model never
+  // lands on the unusable copy and no confusing warning appears on a model switch.
+  {const base=n=>String(n).split(/[\\/]/).pop().toLowerCase();for(let i=models.length-1;i>=0;i--){const m=models[i];if(m.status!=='ready'&&m.type==='CheckpointLoaderSimple'&&['h3','ltx'].includes(m.family)&&models.some(t=>t!==m&&t.type==='UNETLoader'&&t.status==='ready'&&base(t.name)===base(m.name)))models.splice(i,1);}}
   const loras=choices(objects,'LoraLoader','lora_name').length?choices(objects,'LoraLoader','lora_name'):choices(objects,'LoraLoaderModelOnly','lora_name');
   // Reuse local metadata; do not make hundreds of metadata HTTP calls on startup.
   const local=await library.list({kind:'lora',page:1});const loraItems=[];for(let page=1;page<=Math.min(local.pages||1,300);page++){const batch=page===1?local:await library.list({kind:'lora',page});loraItems.push(...batch.items);}
@@ -74,6 +78,15 @@ export function createAutomatic({getObjects,fetchImpl,library}){
   if(!clip||!vae)throw Error('Nem állítható össze biztonságosan a modell kiegészítő készlete.');
   const defaults=automaticSamplingDefaults(model);
   const s=effectiveSampling(data.sampling,defaults,data.samplingOverrides||data.controls?.samplingOverrides);validateSampling(s,all);
+  if(data.characterPath){
+   // 0.16 DEV: karakter-hűség (PuLID-Flux). The reference face is a separate LoadImage that only feeds ApplyPulidFlux.
+   if(family!=='flux1')throw Error('A karakter-hűség jelenleg Flux 1 modellel működik. Válassz Flux modellt, vagy kapcsold ki a karaktert.');
+   if(!objects.ApplyPulidFlux)throw Error('Hiányzik a PuLID-Flux node a ComfyUI-ból.');
+   const pulid=choices(objects,'PulidFluxModelLoader','pulid_file').find(n=>/pulid_flux/i.test(n));if(!pulid)throw Error('A karakterkészlet még nincs letöltve. Töltsd le a Karakter résznél.');
+   if(!/^CreatorHub\/character-[a-f0-9]{16}\.(png|jpg|webp)$/.test(data.characterPath))throw Error('Érvénytelen karakter-referenciakép.');
+   const weight=Math.min(1.5,Math.max(0.3,Number(data.characterWeight)||1));deps.push({role:'Karakter (PuLID)',name:pulid});
+   m=add('ApplyPulidFlux',{model:m,pulid_flux:add('PulidFluxModelLoader',{pulid_file:pulid}),eva_clip:add('PulidFluxEvaClipLoader',{}),face_analysis:add('PulidFluxInsightFaceLoader',{provider:'CPU'}),image:add('LoadImage',{image:data.characterPath}),weight,start_at:0,end_at:1,fusion:'mean',fusion_weight_max:1,fusion_weight_min:0,train_step:1000,use_gray:true});
+  }
   if(family==='krea2')m=add('ModelSamplingFlux',{model:m,width:dims.width,height:dims.height,max_shift:1.15,base_shift:1.15});
   let latent,pos,neg;
   if(family==='h3'){
@@ -88,7 +101,7 @@ export function createAutomatic({getObjects,fetchImpl,library}){
   }
   let sampled;
   if(['h3','ltx'].includes(family))sampled=add('SamplerCustomAdvanced',{noise:add('RandomNoise',{noise_seed:42}),guider:add(family==='ltx'?'LTXVDualCFGGuider':'CFGGuider',{model:m,positive:pos,negative:neg,...(family==='ltx'?{video_cfg:s.cfg,audio_cfg:s.cfg}:{cfg:s.cfg})}),sampler:add('KSamplerSelect',{sampler_name:s.sampler}),sigmas:add('BasicScheduler',{model:m,scheduler:s.scheduler,steps:s.steps,denoise:s.denoise}),latent_image:latent});
-  else sampled=add('KSampler',{model:m,seed:42,steps:s.steps,cfg:s.cfg,sampler_name:s.sampler,scheduler:s.scheduler,positive:pos,negative:neg,latent_image:latent,denoise:s.denoise});
+  else sampled=add('KSampler',{model:m,seed:42,steps:s.steps,cfg:s.cfg,sampler_name:s.sampler,scheduler:s.scheduler,positive:pos,negative:neg,latent_image:latent,denoise:data.useImage?s.denoise:1}/* 0.17: üres latentre mindig teljes zajtalanítás */);
   const separated=family==='ltx'?add('LTXVSeparateAVLatent',{av_latent:sampled}):null;const decoded=add('VAEDecode',{samples:separated||sampled,vae});
   if(['h3','ltx'].includes(family))add('SaveVideo',{video:add('CreateVideo',{images:decoded,audio:family==='ltx'?add('LTXVAudioVAEDecode',{samples:[separated[0],1],audio_vae:audio}):add('VAEDecodeAudio',{samples:sampled,vae:audio}),fps:24}),filename_prefix:'ArtofTomworks/CreatorHub',...(objects.SaveVideo?.input?.required?.format?.[0]==='COMFY_DYNAMICCOMBO_V3'?{format:{format:'mp4',codec:{codec:'h264'}}}:{format:'auto',codec:'auto'})});
   else add('SaveImage',{images:decoded,filename_prefix:'ArtofTomworks/CreatorHub'});
@@ -97,10 +110,12 @@ export function createAutomatic({getObjects,fetchImpl,library}){
  async function validateLoras(backend,model,controls){const all=await list(backend);for(const row of controls.addedLoras||[]){if(!row.on)continue;const item=all.loras.find(i=>i.name===row.name);if(!item)throw Error('A LoRA nincs a háttér listájában: '+row.name);const result=compatibility(model.family,item.family);if(result==='incompatible'||result==='unknown'&&!controls.allowUnknownLoras)throw Error('A LoRA családja eltér vagy még nem igazolt: '+row.name);}}
  return {list,build,validateLoras,invalidate(){cache.clear();snapshot=null;}};
 }
-export function validateSampling(s,options){
+export function validateSampling(s,options,{partial=false}={}){
  if(!Number.isInteger(s.steps)||s.steps<1||s.steps>1000)throw Error('A lépésszám 1–1000 közötti egész szám legyen.');
  for(const [key,min,max]of [['cfg',0,100],['denoise',.01,1],['guidance',0,100]])if(!Number.isFinite(s[key])||s[key]<min||s[key]>max)throw Error('Hibás generálási érték: '+key);
- if(!options.samplers.includes(s.sampler)||!options.schedulers.includes(s.scheduler))throw Error('A sampler vagy scheduler nincs a háttér támogatott listájában.');
+ // 0.16 DEV: partial=true for imported workflows; only the fields the source actually has are checked
+ // (e.g. LTX with ManualSigmas has a sampler but no scheduler).
+ if(!(partial&&s.sampler===undefined)&&!options.samplers.includes(s.sampler)||!(partial&&s.scheduler===undefined)&&!options.schedulers.includes(s.scheduler))throw Error('A sampler vagy scheduler nincs a háttér támogatott listájában.');
 }
 export function validateGraph(prompt,objects){
  validateVideoOutputs(prompt,objects);

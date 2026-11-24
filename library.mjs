@@ -1,3 +1,4 @@
+import {writeAssetPreview} from './asset-preview.mjs';
 import {openInExplorer} from './native-open.mjs';
 import {readAssetSource} from './asset-source.mjs';
 import {readdir,stat,readFile,open,mkdir,writeFile,rename} from 'node:fs/promises';
@@ -101,7 +102,7 @@ export function createLibrary({root,discover=discoverFolders,openItem}={}){
     if(!MODEL_EXT.has(ext)&&!(inherited==='workflow'&&ext==='.json'))continue;
     if(map.size>=25000){capped=true;break;}
     const kind=inherited&&inherited!=='auto'?inherited:'other',stem=path.basename(entry.name,ext).toLowerCase();let preview=null;
-    for(const suffix of ['.preview','.thumb','-preview','']){for(const imageExt of IMAGE_EXT){const match=imageFiles.get(stem+suffix+imageExt);if(match){preview=path.join(dir,match);break;}}if(preview)break;}
+    for(const suffix of ['.hub-preview','.preview','.thumb','-preview','']){for(const imageExt of IMAGE_EXT){const match=imageFiles.get(stem+suffix+imageExt);if(match){preview=path.join(dir,match);break;}}if(preview)break;}
     try{record(file,kind,r,await stat(file),preview);}catch{scan.errors++;}
     if(map.size%100===0)await new Promise(r=>setImmediate(r));
    }
@@ -119,7 +120,12 @@ export function createLibrary({root,discover=discoverFolders,openItem}={}){
   if(filterLoras&&loraFamily||includeProfiles){let next=0;const enriched=new Array(result.length);await Promise.all(Array.from({length:4},async()=>{while(next<result.length){const n=next++,i=result[n];enriched[n]=i.kind==='lora'||includeProfiles?{...i,family:(await profile(i)).family}:i;}}));result=enriched;}
   const hiddenLoras=filterLoras&&loraFamily&&!showAllLoras?result.filter(i=>i.kind==='lora'&&(i.family?i.family!==loraFamily:!allowUnknownLoras)).length:0;
   if(filterLoras&&loraFamily&&!showAllLoras)result=result.filter(i=>i.kind!=='lora'||(i.family?i.family===loraFamily:allowUnknownLoras));
-  result.sort((a,b)=>Number(settings.favorites.includes(b.id))-Number(settings.favorites.includes(a.id))||(sort==='recent'?b.mtime-a.mtime:sort==='size'?b.size-a.size:0)||a.name.localeCompare(b.name,'hu',{numeric:true}));page=Math.min(Math.max(1,Number(page)||1),Math.max(1,Math.ceil(result.length/36)));
+  result.sort((a,b)=>Number(settings.favorites.includes(b.id))-Number(settings.favorites.includes(a.id))||(sort==='recent'?b.mtime-a.mtime:sort==='size'?b.size-a.size:0)||a.name.localeCompare(b.name,'hu',{numeric:true}));const wanted=Number(page)||1;
+  // 0.16 DEV: files deleted outside the Hub disappear at once – the shown page is checked on disk and missing
+  // entries are dropped from the index (no rescan or restart needed). Folders and unreadable paths are left alone.
+  for(let round=0;round<3;round++){page=Math.min(Math.max(1,wanted),Math.max(1,Math.ceil(result.length/36)));const gone=new Set();
+   await Promise.all(result.slice((page-1)*36,page*36).map(async i=>{if(i.directory)return;try{await stat(i.path);}catch(e){if(e.code==='ENOENT')gone.add(i.id);}}));
+   if(!gone.size)break;result=result.filter(i=>!gone.has(i.id));if(scan.state!=='scanning'){items=items.filter(i=>!gone.has(i.id));await persist(true);}}
   return {total:result.length,hiddenLoras,page,pages:Math.max(1,Math.ceil(result.length/36)),items:result.slice((page-1)*36,page*36).map(i=>({...i,preview:!!i.preview,favorite:settings.favorites.includes(i.id),kindLabel:KINDS[i.kind]}))};
  }
  async function item(id){await ready();const i=visible().find(i=>i.id===id);if(!i)throw Error('A készletelem már nem szerepel az aktív könyvtárakban.');return i;}
@@ -128,9 +134,16 @@ export function createLibrary({root,discover=discoverFolders,openItem}={}){
   const stem=i.path.slice(0,-path.extname(i.path).length);for(const filename of [stem+'.description.txt',stem+'.txt'])try{const real=await realpath(filename);if(path.dirname(real)!==path.dirname(i.path))continue;const s=await stat(real);if(s.size<=32000){description=(await readFile(real,'utf8')).slice(0,6000);break;}}catch{}
   return {...i,preview:!!i.preview,kindLabel:KINDS[i.kind],favorite:settings.favorites.includes(i.id),family,source,conflict,metadata:meta,description};
  }
- async function thumbnail(id,res){const i=await item(id);if(!i.preview)throw Error('Nincs helyi előnézeti kép.');const real=await realpath(i.preview);if(!inside(path.dirname(i.path),real)||!IMAGE_EXT.has(path.extname(real).toLowerCase()))throw Error('Az előnézet nem ebben a könyvtárban van.');const s=await stat(real);if(s.size>12*1024**2)throw Error('Túl nagy előnézeti kép.');const types={'.jpg':'image/jpeg','.jpeg':'image/jpeg','.png':'image/png','.webp':'image/webp'};res.writeHead(200,{'Content-Type':types[path.extname(real).toLowerCase()],'Cache-Control':'private, max-age=120','X-Content-Type-Options':'nosniff'});res.end(await readFile(real));}
+ async function setPreview({id,image}){if(task)await task;const i=await item(id);if(i.directory||!MODEL_EXT.has(path.extname(i.path).toLowerCase()))throw Error('Ehhez az elemhez nem rendelhető modell-bélyegkép.');if(typeof image!=='string'||image.length>12*1024**2||!/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(image))throw Error('Érvénytelen bélyegkép.');const result=await writeAssetPreview(i.path,Buffer.from(image.split(',')[1],'base64'),{custom:true});if(task)await task;const current=await item(id);current.preview=result.path;await persist(true);return {saved:result.saved};}
+ async function thumbnail(id,res){const i=await item(id);if(!i.preview)throw Error('Nincs helyi előnézeti kép.');const real=await realpath(i.preview);if(!inside(path.dirname(i.path),real)||!IMAGE_EXT.has(path.extname(real).toLowerCase()))throw Error('Az előnézet nem ebben a könyvtárban van.');const s=await stat(real);if(s.size>12*1024**2)throw Error('Túl nagy előnézeti kép.');const types={'.jpg':'image/jpeg','.jpeg':'image/jpeg','.png':'image/png','.webp':'image/webp'};res.writeHead(200,{'Content-Type':types[path.extname(real).toLowerCase()],'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(await readFile(real));}
  async function favorite(id,on){await item(id);settings.favorites=settings.favorites.filter(v=>v!==id);if(on)settings.favorites.push(id);await persist();return {saved:true};}
  async function workflow(id){const i=await item(id);if(i.kind!=='workflow'||path.extname(i.path).toLowerCase()!=='.json')throw Error('Nem workflow JSON.');const s=await stat(i.path);if(s.size>6*1024**2)throw Error('Legfeljebb 6 MiB-os workflow tölthető be.');return {source:JSON.parse(await readFile(i.path,'utf8'))};}
  async function openLocation(id){const i=await item(id);if(openItem)return openItem(i.path,i.directory);if(process.platform!=='win32')throw Error('Ezen a rendszeren másold ki az útvonalat.');return openInExplorer(i.path,{directory:!!i.directory});}
- return {state,add,manage,start,list,detail,thumbnail,favorite,workflow,openLocation,async stop(){cancel=true;return state();},async wait(){if(task)await task;return state();}};
+ // 0.16 DEV: puts one freshly written file (e.g. a saved workflow) into the index of an existing, enabled root,
+ // so it shows up in Készlettár at once, without a full rescan. Returns false when that is not possible.
+ async function remember(file,kind){await ready();if(scan.state==='scanning'||!KINDS[kind])return false;const actual=await realpath(file),s=await stat(actual);
+  const root=settings.roots.filter(r=>r.enabled).find(r=>{const rel=path.relative(r.path,actual);return rel&&!rel.startsWith('..')&&!path.isAbsolute(rel);});if(!root)return false;
+  const ext=path.extname(actual),stem=path.basename(actual,ext).toLowerCase(),dir=path.dirname(actual);let preview=null;try{const names=new Map((await readdir(dir)).map(n=>[n.toLowerCase(),n]));for(const suffix of ['.hub-preview','.preview','.thumb','-preview','']){for(const imageExt of IMAGE_EXT){const m=names.get(stem+suffix+imageExt);if(m){preview=path.join(dir,m);break;}}if(preview)break;}}catch{}
+  const id=ident(actual);items=items.filter(i=>i.id!==id);items.push({id,path:actual,name:path.basename(actual),kind,size:s.size,mtime:s.mtimeMs,preview,directory:false,roots:[root.id]});await persist(true);return true;}
+ return {state,add,manage,start,list,detail,thumbnail,setPreview,favorite,workflow,openLocation,remember,async stop(){cancel=true;return state();},async wait(){if(task)await task;return state();}};
 }

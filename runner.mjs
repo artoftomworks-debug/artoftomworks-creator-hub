@@ -1,4 +1,4 @@
-import {attachH3Preview} from './preview-image.mjs';
+import {profileOutputSegment} from './profiles.mjs';import {checkPlan} from './parental.mjs';import {attachH3Preview} from './preview-image.mjs';
 import {normalizeVideoOutputs} from './video-output.mjs';
 import {readFile} from 'node:fs/promises';
 import {atomicJSON} from './storage.mjs';
@@ -11,7 +11,7 @@ import {createRenderLive} from './vendor/render-live.mjs';
 import {backendURL,renderBundle,inspectRenderSource,compileRenderShot,renderHash,h3RenderTiming,renderDimensions,videoTiming} from './workflow.mjs';
 const renderToken=v=>{if(typeof v!=='string'||!/^\w[\w-]{0,99}$/.test(v))throw Error('Invalid project/shot identifier.');return v;};
 const activeStates=['submitting','queued','running','cancelling'];
-export function createRenderServices({root,fetchImpl=fetch,pollMS=1800,liveSocket=fetchImpl===fetch?globalThis.WebSocket:null,beforeSubmit}={}){
+export function createRenderServices({root,fetchImpl=fetch,pollMS=1800,liveSocket=fetchImpl===fetch?globalThis.WebSocket:null,beforeSubmit,onFailure}={}){
  const live=createRenderLive({Socket:liveSocket});
  const runs=new Map();let timer=null,working=false;
  async function request(url,route,body,limit=12*1024**2){const r=await fetchImpl(url+route,{method:body===undefined?'GET':'POST',...(body===undefined?{}:{headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),redirect:'error',signal:AbortSignal.timeout(15000)});let text=await r.text();if(text.length>limit)throw Error('Backend response too large.');let data;try{data=text?JSON.parse(text):{};}catch{throw Error('ComfyUI did not return JSON. Check its local address.');}if(!r.ok){const e=Error(typeof data.error==='string'?data.error:JSON.stringify(data.error||data));e.definite=true;throw e;}return data;}
@@ -20,24 +20,26 @@ export function createRenderServices({root,fetchImpl=fetch,pollMS=1800,liveSocke
  async function load(id){if(!/^[a-f0-9]{32}$/.test(id))throw Error('Invalid run ID.');if(runs.has(id))return runs.get(id);const r=JSON.parse(await readFile(path.join(root,id+'.json'),'utf8'));if(r.id!==id||r.schema!=='artoftomworks.scene-dna.run')throw Error('Invalid saved run.');r.autoRun=false;r.state='paused';runs.set(id,r);return r;}
  async function queue(r){const q=await request(r.backend,'/queue');return {running:q.queue_running||[],pending:q.queue_pending||[]};}
  async function update(r){
+  /* 0.16 DEV: recovery – a shot marked lost by the old race may have finished in the backend after all; check its history once */
+  const lost=r.jobs.find(j=>j.state==='unknown'&&j.promptId&&!j.recoveryChecked);if(lost){lost.recoveryChecked=true;try{const h=await request(r.backend,'/history/'+encodeURIComponent(lost.promptId));if(h?.[lost.promptId]){lost.state='running';lost.error='';delete lost.finished;lost.recovered=true;}}catch{}await save(r);return;}
   const job=r.jobs.find(j=>activeStates.includes(j.state));
   if(job){await live.watch(r,job);const history=await request(r.backend,'/history/'+encodeURIComponent(job.promptId));const h=history[job.promptId];
    if(h){const status=h.status||{};if(status.completed&&status.status_str==='success'){
      const media=[];for(const values of Object.values(h.outputs?.[job.output]||{}))if(Array.isArray(values))for(const m of values)if(m?.type==='output'&&typeof m.filename==='string'&&/\.(png|jpg|jpeg|webp|mp4|webm|mov|mkv|m4v)$/i.test(m.filename)&&!/[\\/]/.test(m.filename)&&typeof(m.subfolder??'')==='string'&&!String(m.subfolder||'').split(/[\\/]/).includes('..'))media.push({filename:m.filename,subfolder:m.subfolder||'',type:'output'});
      job.results=media;job.state=media.length?'complete':'failed';job.error=media.length?'':'The backend completed without a saved video on the selected output.';
-    }else{job.state=job.cancelRequested?'cancelled':'failed';if(job.cancelRequested)job.error='';else{job.errorInfo=renderExecutionError(status.messages);job.error=job.errorInfo.message;}}if(job.state!=='complete'){r.autoRun=false;r.state='paused';}
-   }else{const q=await queue(r);if(q.running.some(i=>i[1]===job.promptId))job.state=job.cancelRequested?'cancelling':'running';else if(q.pending.some(i=>i[1]===job.promptId))job.state='queued';else{job.state=job.cancelRequested?'cancelled':'unknown';job.error=job.cancelRequested?'':'No queue/history record. This shot will not be submitted again without an explicit retry.';r.autoRun=false;r.state='paused';}}
+    }else{job.state=job.cancelRequested?'cancelled':'failed';if(job.cancelRequested)job.error='';else{job.errorInfo=renderExecutionError(status.messages);job.error=job.errorInfo.message;}}/* 0.16 DEV: self-heal (memory errors only) – retry the same job instead of pausing */if(job.state==='failed'&&job.errorInfo&&onFailure){let h=null;try{h=await onFailure(r,job);}catch{}if(h?.retry){job.state='planned';delete job.promptId;delete job.started;delete job.finished;job.lastError=job.error;job.error='';delete job.errorInfo;job.healNote=h.note||'';await save(r);return;}}if(job.state!=='complete'){r.autoRun=false;r.state='paused';}
+   }else{const q=await queue(r);if(q.running.some(i=>i[1]===job.promptId))job.state=job.cancelRequested?'cancelling':'running';else if(q.pending.some(i=>i[1]===job.promptId))job.state='queued';else{/* 0.16 DEV: a prompt can finish between the history and the queue request – look at the history once more before calling it lost */const again=await request(r.backend,'/history/'+encodeURIComponent(job.promptId));if(again?.[job.promptId]){/* finished just now; the next tick reads the result */}else{job.state=job.cancelRequested?'cancelled':'unknown';job.error=job.cancelRequested?'':'No queue/history record. This shot will not be submitted again without an explicit retry.';r.autoRun=false;r.state='paused';}}}
    if(['complete','failed','cancelled','unknown'].includes(job.state)&&!job.finished)job.finished=Date.now();await save(r);return;
   }
   if(!r.autoRun)return;const next=r.jobs.find(j=>j.state==='planned');if(!next){r.autoRun=false;r.state='complete';await save(r);return;}
   const q=await queue(r);if(q.running.length||q.pending.length){r.state='waiting';return;}
   next.promptId=randomUUID();next.state='submitting';next.started=Date.now();r.state='running';await save(r);
   if(typeof r.previewPaused==='boolean')await previewControl({id:r.id,paused:r.previewPaused});await live.watch(r,next);
-  try{await beforeSubmit?.();const result=await request(r.backend,'/prompt',{prompt_id:next.promptId,prompt:next.prompt,client_id:'scene-dna-'+r.id,extra_data:{scene_dna_run:r.id,scene_dna_shot:next.shotId,...(next.workflow?{extra_pnginfo:{workflow:next.workflow}}:{})}});
+  try{const pre=await beforeSubmit?.(r,next);if(pre?.freed)next.memoryFreed={from:pre.from,to:pre.to,at:pre.at};const result=await request(r.backend,'/prompt',{prompt_id:next.promptId,prompt:next.prompt,client_id:'scene-dna-'+r.id,extra_data:{scene_dna_run:r.id,scene_dna_shot:next.shotId,...(next.workflow?{extra_pnginfo:{workflow:next.workflow}}:{})}});
    if(typeof result.prompt_id!=='string'||!result.prompt_id)throw Error('No prompt ID returned.');next.promptId=result.prompt_id;next.state='queued';
   }catch(e){next.state=e.definite?'failed':'unknown';next.error=e.message.slice(0,3000);r.autoRun=false;r.state='paused';}await save(r);
  }
- async function tick(){if(working)return;working=true;try{for(const r of runs.values())if(r.autoRun||r.jobs.some(j=>activeStates.includes(j.state)))try{await update(r);}catch(e){r.autoRun=false;r.state='paused';r.error=e.message.slice(0,2000);try{await save(r);}catch(storageError){r.error+=' · A futásnapló mentése nem sikerült: '+storageError.message.slice(0,500);}}}finally{working=false;}}
+ async function tick(){if(working)return;working=true;try{for(const r of runs.values())if(r.autoRun||r.jobs.some(j=>activeStates.includes(j.state)||(j.state==='unknown'&&j.promptId&&!j.recoveryChecked)))try{await update(r);r.transientErrors=0;}catch(e){/* 0.16 DEV: egy-egy átmeneti időtúllépés / kapcsolatbontás (pl. modellbetöltés alatti memória-nyomás) ne állítsa le a sort – néhányszor újrapróbáljuk */if(/aborted due to timeout|TimeoutError|ECONNRESET|ECONNREFUSED|socket hang up|fetch failed/i.test(e.message)&&(r.transientErrors||0)<8){r.transientErrors=(r.transientErrors||0)+1;continue;}r.autoRun=false;r.state='paused';r.error=e.message.slice(0,2000);try{await save(r);}catch(storageError){r.error+=' · A futásnapló mentése nem sikerült: '+storageError.message.slice(0,500);}}}finally{working=false;}}
  const ensureTimer=()=>{if(!timer){timer=setInterval(()=>void tick(),pollMS);timer.unref?.();}};
  async function exclusive(fn){const deadline=Date.now()+30000;while(working){if(Date.now()>deadline)throw Error('A háttér még dolgozik. Próbáld újra egy pillanat múlva.');await new Promise(r=>setTimeout(r,25));}working=true;try{return await fn();}finally{working=false;}}
  async function upload(url,image,folder,name){
@@ -48,6 +50,7 @@ export function createRenderServices({root,fetchImpl=fetch,pollMS=1800,liveSocke
  async function prepare(data){return exclusive(async()=>{
   if(!data.exportOnly&&[...runs.values()].some(r=>r.autoRun||r.jobs.some(j=>activeStates.includes(j.state))))throw Error('Stop the active run and wait for its current shot before preparing another plan.');
   const backend=backendURL(data.backend),bundle=renderBundle(data.source),info=inspectRenderSource(bundle,data.output),dims=renderDimensions(data.width,data.height);
+  checkPlan(data,bundle);/* 0.16 DEV: 🛡 gyerekprofil: engedélyezett modellek, tiltott szavak, biztonsági negatív */
   if(!Array.isArray(data.shots)||!data.shots.length||data.shots.length>24||new Set(data.shots.map(s=>s.id)).size!==data.shots.length)throw Error('1–24 különálló alkotás készíthető egy sorozatban.');
   const prepared=data.shots.map(s=>({...s,image:s.image??data.image})).map((s,index)=>{renderToken(s.id);if(typeof s.prompt!=='string'||!s.prompt.trim()||s.prompt.length>24000)throw Error('Missing or oversized prompt.');const timing=info.mode==='image'?{frames:1,fps:0,seconds:0}:videoTiming(info,s.duration);return {shot:s,index,timing,fingerprint:renderHash({backend,source:info.sourceHash,output:info.output,...dims,shot:s})};});
   const objects=await request(backend,'/object_info',undefined,40*1024**2);const previewAttached=attachH3Preview(bundle.prompt,objects,data.previewProfile);if(normalizeVideoOutputs(bundle.prompt,objects)||previewAttached){delete bundle.workflow;delete bundle.widget_map;}for(const n of Object.values(bundle.prompt))if(!objects[n.class_type]&&n.class_type!=='Note')throw Error('Missing backend node: '+n.class_type);
@@ -56,10 +59,10 @@ export function createRenderServices({root,fetchImpl=fetch,pollMS=1800,liveSocke
   for(const {shot:s,index,timing,fingerprint}of prepared){const cached=old?.jobs.find(j=>j.fingerprint===fingerprint&&j.state==='complete');if(cached){r.jobs.push({...structuredClone(cached),number:index+1});continue;}
    let imagePath=null;if(info.needsImage){const imageKey=renderHash(s.image);imagePath=uploadedImages.get(imageKey);if(!imagePath){imagePath=await upload(backend,s.image,id,randomUUID().replaceAll('-',''));uploadedImages.set(imageKey,imagePath);}}
    const stamp=new Date(r.created).toISOString().replace(/[-:]/g,'').replace(/\.\d{3}Z$/,'Z').replace('T','_'),label=String(data.projectName||'').trim().replace(/[^\p{L}\p{N}_ -]/gu,'').replace(/ +/g,'_').slice(0,50);
-   const prefix=outputFolder(data.outputFolder)+'/'+(info.mode==='video'?'Videos':'Images')+'/'+localDateFolder(r.created)+'/'+(r.kind==='preview'?'Preview_':'')+stamp+(label?'_'+label:'')+'_'+id.slice(0,8)+'_'+String(index+1).padStart(2,'0');
-   const compiled=compileRenderShot(bundle,{...s,output:info.output,prompt:s.prompt,duration:s.duration,...dims},imagePath,prefix);
+   const basePrefix=outputFolder(data.outputFolder)+profileOutputSegment()+'/'+(info.mode==='video'?'Videos':'Images')+'/'+localDateFolder(r.created)+'/'+(r.kind==='preview'?'Preview_':'')+stamp+(label?'_'+label:'')+'_'+id.slice(0,8)+'_'+String(index+1).padStart(2,'0');
+   const compiled=compileRenderShot(bundle,{...s,output:info.output,prompt:s.prompt,duration:s.duration,...dims,nameModel:info.mode==='image'},imagePath,basePrefix),prefix=compiled.prefix||basePrefix;
    const effective=inspectRenderSource({prompt:compiled.prompt},info.output);r.models=effective.models;r.loras=effective.loras;
-   r.jobs.push({mode:info.mode,shotId:s.id,title:String(s.title||'Változat '+(index+1)).slice(0,180),number:index+1,fingerprint,state:'planned',prompt:compiled.prompt,workflow:compiled.workflow,output:info.output,requested:s.duration,seed:s.controls?.seed,sampling:s.controls?.sampling,...timing,...dims,imagePath,prefix,results:[],error:''});
+   r.jobs.push({scene:s.scene,sceneIntent:s.sceneIntent,parentIds:s.parentIds,operation:s.operation,mode:info.mode,shotId:s.id,title:String(s.title||'Változat '+(index+1)).slice(0,180),number:index+1,fingerprint,state:'planned',prompt:compiled.prompt,workflow:compiled.workflow,output:info.output,requested:s.duration,seed:s.controls?.seed,sampling:s.controls?.sampling,...timing,...dims,width:compiled.width??dims.width,height:compiled.height??dims.height,imagePath,prefix,results:[],error:''});
   }
   await save(r);runs.set(id,r);return publicRun(r);
  });}

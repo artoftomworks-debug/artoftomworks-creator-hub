@@ -16,7 +16,10 @@ export function applyResourcePolicy(prompt,objects,{memoryProfile='auto',h3Accel
  if(policy.effective==='low'){
   if(h3){chain('MiniMaxLowVRAMAttention',{head_chunks:2},'H3 figyelem két részletben');chain('MiniMaxChunkFeedForward',{chunks:2,seq_threshold:4096},'H3 köztes számítás két részletben');}
   else if(ltx)chain('LTXVChunkFeedForward',{chunks:2,dim_threshold:4096},'LTX köztes számítás két részletben');
-  let tiled=false;for(const [,n]of original)if(n.class_type==='VAEDecode'){const inputs=nodeInputs(objects,'VAEDecodeTiled',{...n.inputs,tile_size:512,overlap:64,temporal_size:32,temporal_overlap:4});if(inputs){n.class_type='VAEDecodeTiled';n.inputs=inputs;changed=tiled=true;}}
+  // 0.16 DEV: 32/4 temporal tiles left a visible seam every 24 frames on LTX (8x temporal compression: 3-latent steps, 1-latent blend).
+  // LTX now decodes up to 128 frames (5 s at 24 fps) in one temporal piece and blends longer clips over 32 frames; space stays tiled at 512 px.
+  const temporal=ltx?{temporal_size:128,temporal_overlap:32}:{temporal_size:32,temporal_overlap:4};
+  let tiled=false;for(const [,n]of original)if(n.class_type==='VAEDecode'){const inputs=nodeInputs(objects,'VAEDecodeTiled',{...n.inputs,tile_size:512,overlap:64,...temporal});if(inputs){n.class_type='VAEDecodeTiled';n.inputs=inputs;changed=tiled=true;}}
   if(tiled)applied.push('Csempés képi/videó-dekódolás');else notes.push('Csempés dekódolás nem alkalmazható; a workflow eredeti dekódolója marad.');
  }
  if(h3Acceleration==='kitchen'&&h3){

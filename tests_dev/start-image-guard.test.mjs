@@ -1,0 +1,10 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {staleReason,promptSimilarity,imageSig,STALE_MS} from '../start-image-guard.mjs';
+const img='data:image/png;base64,AAAA',now=1e13;
+test('similarity',()=>{assert.equal(promptSimilarity('a red car at night','a red car at night'),1);assert.ok(promptSimilarity('red car night city','blue forest morning river')<0.2);});
+test('staleReason',()=>{const fresh={image:img,prompt:'red car night',startImageInfo:{sig:imageSig(img),loadedAt:now-1000}};assert.equal(staleReason(fresh,now),null);
+ assert.equal(staleReason({...fresh,startImageInfo:{...fresh.startImageInfo,loadedAt:0}},now),'old');
+ assert.equal(staleReason({...fresh,startImageInfo:{...fresh.startImageInfo,usedPrompt:'blue forest morning river'}},now),'prompt');
+ assert.equal(staleReason({...fresh,startImageInfo:{...fresh.startImageInfo,usedPrompt:'red car night, rain'}},now),null);
+ assert.equal(staleReason({...fresh,startImageInfo:{...fresh.startImageInfo,loadedAt:0,ackAt:now-STALE_MS+5}},now),null);
+ assert.equal(staleReason({...fresh,useImage:false,startImageInfo:{sig:imageSig(img),loadedAt:0}},now),null);assert.equal(staleReason({prompt:'x'},now),null);});

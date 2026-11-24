@@ -17,7 +17,7 @@ export function buildMotionText(raw){const m=normalizeMotion(raw),speed={slow:'s
 }
 export function motionText(raw){const m=normalizeMotion(raw);return m.custom?m.text.trim():buildMotionText(m);}
 const compact=text=>String(text||'').toLocaleLowerCase().replace(/\s+/g,' ').trim();
-export function composeVideoPrompt(base,raw){const text=String(base||''),m=normalizeMotion(raw),extra=motionText(m);if(!m.enabled||!extra||compact(text).includes(compact(extra)))return text;return [text.trim(),extra].filter(Boolean).join('\n\n');}
+export function composeVideoPrompt(base,raw,sound=''){const text=String(base||''),m=normalizeMotion(raw),extra=motionText(m);let out=(!m.enabled||!extra||compact(text).includes(compact(extra)))?text:[text.trim(),extra].filter(Boolean).join('\n\n');/* 0.16 DEV: 🔊 hangterv (csak hangot is adó modellnél kap szöveget) */const snd=String(sound||'').trim();if(snd&&!compact(out).includes(compact(snd)))out=[out.trim(),snd].filter(Boolean).join('\n\n');return out;}
 export const MOTION_PRESETS=[
  {id:'cinematic-push',name:'Lassú filmes közelítés',motion:normalizeMotion({enabled:true,camera:'push',speed:'slow',subject:'subtle',intensity:'gentle',composition:'medium',horizon:true,focus:'subject'})},
  {id:'quiet-portrait',name:'Nyugodt portré',motion:normalizeMotion({enabled:true,camera:'static',subject:'subtle',intensity:'gentle',composition:'close',face:true,horizon:true,focus:'subject'})},

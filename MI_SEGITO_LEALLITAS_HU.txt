@@ -1,0 +1,19 @@
+﻿CREATOR HUB 0.13.9 — MI LEÁLLÍTÁSA
+
+Új, feltűnő MI leállítása gomb a MI-segítő rögzített felső sorában és a
+Javaslat készítése mellett. A felső gomb a panel aljára görgetve is látható.
+Indításkor azonnal használható, már a szerver visszaigazolása előtt is.
+A leállítás azonosítója a késve beérkező indítást is megakadályozza.
+A modelladatlap ellenőrzése közben is megszakítható a hálózati kérés.
+Leállítás folyamatban jelzés látszik a memória felszabadításáig; a gomb
+nem állítja, hogy a modell már leállt, amíg ezt a háttér nem igazolta.
+Utána másik feladat vagy modell választható és új kérés indítható.
+A fő generálási prompt megmarad; megszakított válasz nem alkalmazható.
+A státusz a kért feladat nevét is mutatja, például Prompt finomítása.
+
+ÁTVÉTEL: ugyanaz az asztali Hub-indító, majd Ctrl+F5. Verzió: 0.13.9.
+192/192 automatikus teszt és böngészős MI-próba sikeres, beleértve az
+indítás előtti leállítást, a késleltetett kérés tiltását, a felső gomb
+láthatóságát görgetéskor és a folyamatban lévő válasz megszakítását.
+A próba szimulált modellt használ; új valódi inferencia nem indult.
+Személyes data/média nem változott. A nyilvános 0.14.0 még nem frissült.

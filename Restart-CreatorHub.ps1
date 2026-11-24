@@ -37,6 +37,8 @@ function Stop-HubServerProcess {
 }
 function Assert-HubIdle {
     param([string]$Base, $Engine, [string]$Root)
+    $nodeUpdates = Get-HubLocalJson -Url ($Base + '/api/updates/install/status') -Optional
+    if ($nodeUpdates -and $nodeUpdates.active) { throw 'A node-csomagok frissitese meg folyamatban van. Vard meg a veget, majd inditsd ujra a Hubot.' }
     $queue = Get-HubLocalJson -Url ($Base + '/api/generation/status')
     if ($null -eq $queue -or -not ($queue.PSObject.Properties.Name -contains 'armed')) { throw 'A Hub feladatsora nem ellenorizheto. A regi peldanyt nem allitom le.' }
     if ($queue.armed -or @($queue.entries | Where-Object { $_.state -in @('running','waiting-cancel') }).Count) { throw 'A Hub meg dolgozik. Vard meg a futo munka veget, majd inditsd ujra ezt az inditot.' }

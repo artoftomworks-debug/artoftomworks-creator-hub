@@ -1,4 +1,4 @@
-import {assignFamilies,validateParentIds} from './lineage.mjs';
+import {visibleTo} from './profiles.mjs';import {assignFamilies,validateParentIds} from './lineage.mjs';
 import {openInExplorer} from './native-open.mjs';
 import {readFile,readdir,stat,open as openHandle,mkdir,link,copyFile,unlink} from 'node:fs/promises';
 import {realpath as resolveLinks,constants} from 'node:fs';
@@ -26,12 +26,13 @@ export function createHistory({root,runner,openFile,platform=process.platform,ca
  async function init(){if(!initializing)initializing=(async()=>{try{db=JSON.parse(await readFile(file,'utf8'));if(db.schema!=='artoftomworks.creator-hub.history')throw Error('Érvénytelen előzményjegyzék.');}catch(e){if(e.code!=='ENOENT')throw e;db={schema:'artoftomworks.creator-hub.history',version:1,annotations:{},locations:{},outputFolder:outputFolder()};}return db;})();return initializing;}
  const deleted=id=>Object.values(db?.trash||{}).find(t=>t.ids.includes(id));
  async function persist(){await atomicJSON(file,db);}
- async function entries(){if(scanning)return scanning;if(entryCache&&Date.now()-cacheTime<250)return entryCache;scanning=readEntries();try{entryCache=await scanning;cacheTime=Date.now();return entryCache;}finally{scanning=null;}}
+ /* 0.16 DEV: 👤 profilonként csak a saját futások látszanak */async function entries(){return (await allEntries()).filter(e=>visibleTo(e.profile));}
+ async function allEntries(){if(scanning)return scanning;if(entryCache&&Date.now()-cacheTime<250)return entryCache;scanning=readEntries();try{entryCache=await scanning;cacheTime=Date.now();return entryCache;}finally{scanning=null;}}
  async function readEntries(){await init();let names;try{names=await readdir(runDir);}catch(e){if(e.code==='ENOENT')return [];throw e;}const out=[];
   for(const name of names.filter(n=>/^[a-f0-9]{32}\.json$/.test(n))){const target=path.join(runDir,name),s=await stat(target);if(s.size>32*1024**2)continue;let cached=cache.get(name);if(!cached||cached.mtime!==s.mtimeMs||cached.size!==s.size){try{const r=JSON.parse(await readFile(target,'utf8'));cached={mtime:s.mtimeMs,size:s.size,run:r};cache.set(name,cached);}catch{continue;}}const r=cached.run;if(r.schema!=='artoftomworks.scene-dna.run'||r.id+'.json'!==name)continue;
    for(const j of r.jobs||[])for(const [index,m]of (j.results||[]).entries()){
     if(typeof m.filename!=='string'||/[\\/]/.test(m.filename)||! /\.(png|jpe?g|webp|mp4|webm|mov|mkv|m4v)$/i.test(m.filename)||typeof(m.subfolder??'')!=='string'||path.isAbsolute(m.subfolder||'')||String(m.subfolder||'').split(/[\\/]/).some(p=>p==='..')||m.type!=='output')continue;
-    const id=resultID(r.id,j.shotId,index),a=db.annotations[id]||{},parents=a.parentIds||j.parentIds||(j.loopMetadata?.id?[j.loopMetadata.id]:j.editorMetadata?.id?[j.editorMetadata.id]:[]);out.push({id,parentIds:Array.isArray(parents)?parents.filter(v=>/^[a-f0-9]{32}$/.test(v)).slice(0,24):[],operation:a.operation||j.operation||(j.loopEdited?'loop':j.editorEdited?'edit':'original'),final:!!a.final,preview:!!j.preview,incomplete:!!j.state&&j.state!=='complete',purged:!!db.purged?.[id],runId:r.id,shotId:j.shotId,index,backend:r.backend,filename:m.filename,subfolder:m.subfolder||'',mode:j.mode||(/\.(png|jpe?g|webp)$/i.test(m.filename)?'image':'video'),project:r.title||r.projectId||'Creator Hub',created:j.finished||j.started||r.created,seed:j.seed??null,width:j.width,height:j.height,number:j.number,rating:a.rating??null,favorite:!!a.favorite,category:a.category||'',trashed:!!deleted(id),url:'/api/run/media?'+new URLSearchParams({id:r.id,shot:j.shotId,index:String(index)})});
+    const id=resultID(r.id,j.shotId,index),a=db.annotations[id]||{},parents=a.parentIds||j.parentIds||(j.loopMetadata?.id?[j.loopMetadata.id]:j.editorMetadata?.id?[j.editorMetadata.id]:[]);out.push({id,profile:r.profile||'',scene:j.scene,seconds:j.seconds,fps:j.fps,parentIds:Array.isArray(parents)?parents.filter(v=>/^[a-f0-9]{32}$/.test(v)).slice(0,24):[],operation:a.operation||j.operation||(j.loopEdited?'loop':j.editorEdited?'edit':'original'),final:!!a.final,preview:!!j.preview,incomplete:!!j.state&&j.state!=='complete',purged:!!db.purged?.[id],runId:r.id,shotId:j.shotId,index,backend:r.backend,filename:m.filename,subfolder:m.subfolder||'',mode:j.mode||(/\.(png|jpe?g|webp)$/i.test(m.filename)?'image':'video'),project:r.title||r.projectId||'Creator Hub',created:j.finished||j.started||r.created,seed:j.seed??null,width:j.width,height:j.height,number:j.number,rating:a.rating??null,favorite:!!a.favorite,category:a.category||'',trashed:!!deleted(id),url:'/api/run/media?'+new URLSearchParams({id:r.id,shot:j.shotId,index:String(index)})});
    }
   }return assignFamilies(out).filter(e=>!e.purged);
  }
@@ -49,7 +50,7 @@ export function createHistory({root,runner,openFile,platform=process.platform,ca
   const e=await item(id);await init();if(e.trashed)return {...e,path:null,available:false,message:'A fájl a Creator Hub lomtárában van. Az Előzmények Lomtár nézetében visszaállítható.'};
   const options=db.locations[e.backend]?[db.locations[e.backend]]:await (typeof candidates==='function'?candidates():candidates);let missing=false,uncertain=false;
   for(const option of options.filter(Boolean)){
-   let base,target;try{base=await realpath(option);if(!(await stat(base)).isDirectory())continue;target=path.resolve(base,e.subfolder,e.filename);if(!inside(base,target)){uncertain=true;continue;}}catch{continue;}
+   let base,target;try{base=await realpath(option);if(!(await stat(base)).isDirectory())continue;target=path.resolve(base,...String(e.subfolder||'').split(/[\\/]/).filter(Boolean),e.filename);/* 0.17: a ComfyUI Windowson \\-sel írja az almappát – így Linuxon is feloldódik */if(!inside(base,target)){uncertain=true;continue;}}catch{continue;}
    try{const actual=await realpath(target);if(!inside(base,actual)||!(await stat(actual)).isFile()){uncertain=true;continue;}return {...e,path:actual,outputRoot:base,available:true};}
    catch(error){if(error.code!=='ENOENT'){uncertain=true;continue;}
     // Missing media can be removed from history only after verifying its output root

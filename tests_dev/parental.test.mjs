@@ -1,0 +1,14 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {blockedWord,checkPlan,sourceModels,filterCatalog,deniedPath,restrictionsFor,SAFE_NEGATIVE,cleanRestrictions} from '../parental.mjs';
+const child=restrictionsFor({role:'child',restrictions:{models:['C:\\m\\safe_sdxl.safetensors']}});
+test('blocked words: stems, whole-word short stems, languages',()=>{for(const t of ['a nude woman','NSFW art','meztelen nő','véres jelenet','blutig? no: Blut am Boden','sexy pose'])assert.ok(blockedWord(t),t);
+ for(const t of ['a number of cats','mellow sunset','a cumulus cloud','skill tree','nuance','stripe pattern','a red dress, cocktail party','Sussex countryside'])assert.equal(blockedWord(t),null,t);});
+test('checkPlan enforces models, loras, words and adds negative',()=>{const bundle={prompt:{1:{class_type:'CheckpointLoaderSimple',inputs:{ckpt_name:'sdxl/safe_sdxl.safetensors'}},2:{class_type:'VAELoader',inputs:{vae_name:'x.safetensors'}}}};
+ const data={shots:[{prompt:'a cat in a garden',negative:'blurry'}]};checkPlan(data,bundle,child);assert.equal(data.shots[0].negative,'blurry, '+SAFE_NEGATIVE);checkPlan(data,bundle,child);assert.equal(data.shots[0].negative,'blurry, '+SAFE_NEGATIVE);
+ assert.throws(()=>checkPlan({shots:[{prompt:'a cat'}]},{prompt:{1:{inputs:{unet_name:'flux_dev.safetensors'}}}},child),/nincs engedélyezve/);
+ assert.throws(()=>checkPlan({shots:[{prompt:'a cat'}]},{prompt:{...bundle.prompt,3:{inputs:{lora_name:'x.safetensors'}}}},child),/LoRA/);
+ assert.throws(()=>checkPlan({shots:[{prompt:'naked person'}]},bundle,child),/prompt/);
+ const adult={shots:[{prompt:'anything'}]};checkPlan(adult,bundle,null);assert.equal(adult.shots[0].negative,undefined);
+ assert.deepEqual(sourceModels(bundle.prompt).models,['sdxl/safe_sdxl.safetensors']);});
+test('catalog filter and denied paths',()=>{const l={models:[{id:'1',name:'safe_sdxl.safetensors'},{id:'2',name:'adult.safetensors'}]};assert.deepEqual(filterCatalog(l,child).models.map(m=>m.id),['1']);assert.equal(filterCatalog(l,null),l);
+ assert.ok(deniedPath('/api/models/search','POST',child));assert.ok(deniedPath('/api/studio/assistant','POST',child));assert.equal(deniedPath('/api/studio/assistant','POST',cleanRestrictions({assistant:true})),null);assert.equal(deniedPath('/api/history','GET',child),null);assert.equal(deniedPath('/api/models/search','POST',null),null);assert.equal(restrictionsFor({role:'user'}),null);});

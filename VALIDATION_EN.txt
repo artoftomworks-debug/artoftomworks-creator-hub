@@ -1,30 +1,45 @@
-CREATOR HUB GLOBAL 0.14.1 — VALIDATION
+CREATOR HUB GLOBAL 0.17.0 — VALIDATION
 
-202/202 source tests passed. 202/202 tests passed in the staged public
-repository, including the optional CPU Loop fixture using an existing
-Python environment. No new software/model was downloaded for tests.
+Automated tests: 352/352 passed (1 skipped: optional CPU Loop integration
+fixture without a configured Python media environment) in the source tree,
+in the staged release copy and in the staged public repository.
+No new software or model was downloaded for tests.
 
-Browser checks passed: independent sampler/scheduler override switches,
-effective values and retained custom choices after reload; FLUX own profiles
-and explicit recommendation application; eight interface languages including
-the new switches; MOSS CFG correction; assistant start/cancel, context retry,
-memory handoff and explicit prompt application; complete simulated image/video
-generation/history/compare/trash workflow and responsive layout.
+Clean Windows ZIP: 401 files; every archived SHA256 verified against
+RELEASE_MANIFEST.json after extraction. No data folder, user history,
+drafts, profiles, saved workflows, credentials, model weights, local media
+index or developer notes are included. A packaging helper with a private
+path and two author-only ComfyUI node folders (H3/LTX CineDirector) were
+excluded; the CineDirector packages are published separately.
+Official Node.js 24 x64 runtime retained from 0.14.1 (hash verified).
 
-The history test exposed two outdated browser expectations (inactive LoRAs
-remain visible, and errors now open a copyable report). Tests now follow the
-current UI. The comparison test also waits for its asynchronous dialog.
-A genuine short-cache miss for fresh history results was repaired and covered
-by a regression test. The complete browser workflow then passed.
+Start test from the extracted ZIP (no existing data): server starts,
+reports 0.17.0, serves the interface and all new modules; without ComfyUI
+it shows the expected engine message. Browser check (Chromium): interface
+opens in English on an English system, no untranslated Hungarian text in
+the main Image and Video views (EN, DE, PL checked), no page errors.
 
-The local 9B vision request was separately verified during these fixes with
-a synthetic red circle/yellow square on blue. The old generate path described
-the unrelated reference text; the corrected chat path identified the image.
-No real image/video GPU-generation quality benchmark was performed for this
-release. Graph defaults are starting values, not universal fine-tune presets.
+Update test: a 0.14.1 instance created a draft and history settings, was
+stopped, and the 0.17.0 program files were copied over it keeping data.
+0.17.0 started, restored the draft (prompt and project name) unchanged,
+profiles remained disabled, history and ideas loaded empty without errors.
 
-Clean Windows ZIP: manifest and every archived SHA256 verified; no user data,
-credentials, model weights or local work logs included. Official Node.js 24 x64
-runtime and existing third-party notices are retained. Model assets and
-ComfyUI/Ollama remain separately installed. Generated media rights still depend
-on the models and source material used.
+Live checks on the author's Windows machine during development: ideas box,
+video sound tool on a real video, themes with background, sound plan
+visibility for H3/LTX, start image chip and dialog, privacy switch,
+profile setup and login screen, camera dialog (without camera stream),
+“Several models at once” with a removed start image (reported fixed by
+the author). Profiles and parental controls were tested end-to-end on an
+isolated test server.
+
+Companion workflows: converted with the Hub’s own workflow compiler
+(LTX two-stage path) and every node type checked against a live ComfyUI
+0.46 object list; the start image uses ComfyUI’s built-in example.png.
+No generation was queued for the companion files.
+
+NOT TESTED in this release: real webcam capture; profile mode and parental
+controls on the release machine; real GPU generation quality for every model
+family; the legacy Python browser regression script (aiohttp unavailable in
+the build environment; replaced by the Chromium checks above); Windows
+installer behaviour of the extracted ZIP on a second, clean Windows machine.
+Graph defaults are starting values, not universal fine-tune presets.

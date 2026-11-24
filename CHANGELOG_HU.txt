@@ -1,3 +1,370 @@
+ARTOFTOMWORKS CREATOR HUB — 0.17.0
+2026. november 24.
+
+Nyilvános frissítés a 0.14.1 után. Benne van minden 0.15.x és 0.16 fejlesztés.
+
+- Több modellel képre és videóra: modellek × formátumok egy indítással,
+  kedvencek/család gyorsválasztó, videónál „Próba” mód, sorozatsáv szünettel,
+  folytatással és megszakítással, rácsnézet (modellek × seedek), opcionális
+  helyi MI-modellajánlás és -kiértékelés.
+- Kétlépcsős LTX 2.5 saját workflow-k támogatása. Bármely előzmény pontos
+  workflow-ja elmenthető vagy visszatölthető.
+- Jelenetfolytatás, „Következő jelenet” asszisztens, storyboard kisfilm-exporttal,
+  karakterkönyv, változat-családfa, „Ugyanez, csak…” gombok, reggeli válogatás.
+- Ötlettár (Alt+I) képekkel, címkékkel és egykattintásos promptokkal.
+- Hangterv a hangot is adó videómodellekhez (LTX 2.5, MiniMax H3) és hangeszköz
+  kész videókhoz (úsztatás, kiegyenlítés −16 LUFS-re, zene ducking-gal).
+- Kezdőkép-figyelő, a „Több modellel” indításnál is.
+- Kamera (tükör, visszaszámlálás, három kép) kezdőképhez és stílusokhoz.
+- Témák, háttérkép és kényelmes nagyítás.
+- Vészkapcsoló (Ctrl+Alt+H), amely minden képet és videót elmos.
+- Opcionális profilok jelszóval és profilonkénti adatokkal; opcionális szülői
+  felügyelet (engedélyezett modellek, LoRA/MI-segítő engedély, szószűrő).
+- Civitai/Hugging Face modellkeresés javításai, modellbélyegképek, titkosítva
+  megjegyzett modellforrás-kulcsok (Windows DPAPI).
+- Önjavítás memóriahiánynál, automatikus memóriaürítés modellváltáskor,
+  ablak nélküli szerver tálcaikonnal, ⏻ Hub menü (újraindítás, leállítás, napló).
+- Kísérő LTX 2.5 workflow-k (Vázlat → Végleges, Simple; angol és magyar)
+  a workflows mappában.
+- Javítások: a kezdőkép eltávolítása után az automatikus terv többé nem követel
+  kezdőképet; kezdőkép nélkül a képgenerálás mindig teljes zajtalanítással fut;
+  a sorból csak a kijelölt terv kerül ki; a piszkozatmentés bírja a Windows-
+  fájlzárolást; sok felületi és fordítási javítás mind a nyolc nyelven.
+
+Ebben a kiadásban nem tesztelt: valódi webkamera Windowson, profilmód és szülői
+felügyelet a kiadó gépen, valamint a valódi GPU-generálás minősége minden
+modellcsaládnál. Lásd: VALIDATION_EN.txt.
+
+ARTOFTOMWORKS CREATOR HUB — 0.16.0 (fejlesztői kör, külön nem jelent meg)
+2026. november 22.
+
+- Kétlépcsős LTX 2.5 workflow saját workflow-ként: alap mintavétel fél
+  felbontáson → 2× látens felskálázás → finomítás. Ilyen például az
+  ArtofTomworks LTX_2.5_Simple_I2V_..._GLOBAL és a Gym REVIEW workflow.
+  A 0.15.4 ezeket elutasította („egy mintavételi lépést támogat”).
+- A Hub számolja az alap látens méretét (a végső méret fele), a képkockaszámot
+  (8k+1 rács, 24/25/30 fps-nél is) és a hang/kondicionálás fps-ét. A forrás
+  ComfyMathExpression segédnode-jait az elkészített példányban a kiszámolt
+  értékek váltják; a betöltött workflow-fájl nem változik.
+- Kétlépcsős módban a végső méret 64-gyel osztható lesz; ettől eltérő kérésnél
+  a legközelebbi érvényes méret készül, és a feladat ezt a méretet rögzíti
+  (pl. 1088×608 → 1088×640; 768×1344 változatlan).
+- A Hub seedje az alaplépcsőt vezérli; a finomító lépcső a workflow saját
+  seedjét tartja meg, ahogy a bevált GLOBAL láncban.
+- A kezdőkép a végső méretre, középre vágva kerül a láncba.
+- Jelenetfolytatás kétlépcsős LTX-forrásból is működik.
+- Az egyetlen szövegmezőt csupasz értékként mentő node (pl. PrimitiveStringMultiline)
+  többé nem okoz „Egyedi widgetelrendezés” hibát.
+- ÚJ · Workflow mentése az Előzményekből: minden kész kép és videó mellett
+  „⤓ Workflow mentése” gomb. Elmenti azt a pontos workflow-t, amivel az eredmény
+  készült (prompt, seed, méret, LoRA-k, mintavétel) a Hub saját mappájába:
+  ArtofTomworks_CreatorHub\Mentett_workflowk\. Beszédes fájlnév (dátum, típus,
+  modell, prompt eleje, seed), mellé előnézeti kép (képnél maga az eredmény,
+  videónál a kezdőkép) és egy olvasható .txt recept. Semmit nem ír felül.
+  A mappa automatikusan a Készlettárba kerül, a mentett workflow onnan azonnal
+  visszatölthető; ComfyUI-ba is behúzható. A „Mentett workflow-k mappája” gomb
+  megnyitja az Explorerben.
+- Workflow mentése (Részletek → Saját workflow): választható cél, a Hub megjegyzi:
+  → Hub mappa (Készlettár) · → ComfyUI workflow-lista (…\user\default\workflows\ArtofTomworks_Hub,
+  a ComfyUI Workflows listájában azonnal látszik) · → Máshova… (Windows „Mentés másként”
+  ablak). Soha nem ír felül: létező névnél _2, _3 … végződés. Mentés után „Megnyitás az
+  Explorerben” gomb.
+- ▦ Rácsnézet: az Előzmények jelenlegi szűrésének (projekt, keresés, kedvencek…) vagy egy kész
+  sorozatnak a képei táblázatban – sorok: modellek, oszlopok: seedek, formátumonként külön lap.
+  Kattintás: nagy nézet, nyilakkal lapozás (← → seedek, ↑ ↓ modellek); ☆ kedvenc; „Mentés
+  rácsképként” (egy PNG feliratokkal). Seed nélküli képeknél egyszerű képrács.
+- Sorozatkijelző a generálás sávjában (a „Több modellel” és a sima sorozatokhoz is):
+  „N / M kész · most: modell · formátum”; ⏸ Szünet (a futó kép elkészül), ⏸ Szünet most (azonnal;
+  folytatáskor a félkész kép ugyanazzal a seeddel indul újra), ▶ Folytatás, ✕ Megszakítás (rákérdez:
+  a futó kép is megszakadjon, vagy készüljön el; a kész képek megmaradnak), Részletek. A végén
+  „✓ kész” · Eredmények (az Előzményekben a sorozatra szűr) · ✦ MI-kiértékelés.
+- „⧉ Több modellel”: az ablak sorba állítás után magától bezárul (hibánál nyitva marad);
+  egyértelműbb seed-szöveg („modellenként 1000, 1001, 1002 – minden modellnél ugyanezek”).
+- ✦ MI-ajánlás (opcionális): a helyi MI a prompt alapján 2–4 modellt javasol a saját modelljeid
+  közül, egy-egy mondatos indoklással; csak megjelöli őket, a pipákat te teszed be (vagy egyben).
+- ✦ MI-kiértékelés (opcionális, a sorozat végén): a helyi, képet értő MI képenként pontoz (0–10),
+  hibákat és erősségeket ír, kiemeli a legjobbat összesen és modellenként. Csak javaslat; generálás
+  közben nem fut; a végén kiüríti a MI-t a memóriából. MI nélkül minden más ugyanúgy működik.
+- JAVÍTÁS · Piszkozat mentése: „UNKNOWN: unknown error, open …draft.json” – a mentés most
+  ideiglenes fájlon át, sorba rendezve és újrapróbálással történik (Windows/vírusirtó zárolás ellen);
+  egyszerre érkező mentések nem írják felül egymás modellbeállításait.
+- JAVÍTÁS · A sorból egy terv kivétele eddig az egész várakozó sort törölte (régi hiba) – most csak
+  az adott tervet veszi ki.
+- „⧉ Több modellel”: Formátum választó – ▯ Álló, ▭ Fekvő, □ Négyzetes (egyszerre több is),
+  ugyanakkora pixelszámmal; modellenként × formátumonként egy terv, azonos seedekkel.
+- Moss · Stable Yogi „Realism” modell: 6 lépés az alapértéke (desztillált; 4–6 lépés elég).
+  Más Moss modelleknél marad az 50.
+- „⧉ Több modellel” (kép módban, a generálás sávjában): ugyanaz a prompt több kijelölt
+  képmodellel, egy indítással. Modellenként N kép, mindegyik a saját megjegyzett beállításaival
+  (lépésszám, sampler, scheduler, CFG); alapból azonos seedekkel (összehasonlításhoz, kapcsolható);
+  SD1/SD2 a neki való méreten (arány marad); LoRA csak oda, ahová illik. Modellenként egy terv
+  kerül a sorba (modellváltás csak modellenként egyszer), közös projektnévvel az Előzményekben
+  („… · Modell-összehasonlítás ÓÓ:PP”), modellenkénti időbecsléssel, ha van korábbi mérés.
+- Előzmények képkártyák: „Másolat: ↔ ↕ ↺ ↻” – tükrözött / forgatott másolat egy kattintással,
+  új tételként az Előzményekbe (az eredeti fájl változatlan marad; a recept forrásként kapcsolódik).
+- Kezdőkép gyorsgombok (Kezdőkép / recept panel): ↔ Tükrözés, ↕ Tükrözés, ↺ 90°, ↻ 90° – külső
+  szerkesztő nélkül. Forgatásnál a „tájolás követése” bekapcsolva a méretet is megfordítja.
+- Önjavítás memóriahiánynál (alapból be; kapcsoló az „✦ Ellenőrzés” panelen): ha a ComfyUI
+  „out of memory” hibával áll meg, a Hub 1) felszabadítja a ComfyUI memóriáját és változatlanul
+  újrapróbálja, 2) ha kell, fele akkora csempékkel dekódol. A promptot, méretet, hosszt, seedet,
+  lépésszámot soha nem módosítja; minden lépést kiír („↻ Önjavítás: …”) és a feladatnál naplóz.
+  Kikapcsolva a Hub pontosan a beállított értékekkel dolgozik, és hibánál megáll.
+- „✦ Ellenőrzés” gomb a generálás sávjában (MI-ellenőrzés indítás előtt, folyamatosan frissül):
+  jelzi, ha a kezdőkép tájolása/aránya nem illik a mérethez, ha a lépésszám nem illik a
+  modellhez (DaSiWa Turbo 8, Eros Max 6), ha az LTX-videó 10 mp-nél hosszabb, ha a méret nem
+  osztható 32-vel (LTX: 64), ha üres a prompt, vagy ha nagy a terhelés. Ahol lehet, egy
+  kattintásos „Javítás” gombbal (pl. méret a kezdőkép arányához, a pixelszámot megtartva).
+- JAVÍTÁS · A modellenként megjegyzett lépésszám (és sampler/scheduler) nem vész el:
+  a mentett piszkozatban modellenként, időbélyeg szerint egyesül. Egy régebben megnyitott
+  Hub-lap vagy -ablak teljes mentése eddig felülírhatta (törölhette) a frissebb beállításokat.
+- ComfyUI (a Hub által indított motor): kép vagy videó behúzható a Load Image / Load Video
+  node-ra akkor is, ha a fájlban ComfyUI-workflow van (eddig a ComfyUI / rgthree workflow-t
+  próbált megnyitni belőle). Új, csak felületi bővítmény: comfy_nodes\artoftomworks-drop-load.
+  A ComfyUI telepítéséhez és más bővítményekhez nem nyúl.
+- Jelenetlánc-frissítés a „Következő jelenetrész” ablakban: az előző rész utolsó
+  képkockáját a Hub az 1. rész kezdőképének színeihez és fényerejéhez igazítja, és
+  finoman élesíti (a ComfyUI-s SceneChainRefresh megfelelője, egy kattintás nélkül).
+  „Színillesztés az 1. részhez” kapcsoló (alapból be, megjegyzi), és kiírja a
+  fényerő-eltérést előtte → utána. Szöveges indítású (kezdőkép nélküli) láncnál nem jelenik meg.
+- „⟲ Workflow betöltése”: a videó hosszát is visszaállítja (a kért hosszt, régebbi
+  eredménynél a tényleges hosszt), nem marad a legutóbbi próba hossza.
+- Előzmények kártya: a „⟲ Workflow betöltése” mellett „💾 Mentés ▾” – lenyíló
+  menü a három céllal (Hub mappa, ComfyUI workflow-lista, Máshova…), a legutóbbi
+  választás pipával. Az eredmény pontos workflow-ját menti. (A fejlécbe tett
+  próbagomb kikerült: túl messze volt az Előzményektől.)
+- „⏻ Hub” gomb a jobb alsó sarokban (kattintásra csak menü nyílik, minden művelet
+  kétlépcsős): ↻ Újraindítás · ↻ Újraindítás a futó munka után (betervezhető és
+  visszavonható) · ⏻ Leállítás (a Hubból indított ComfyUI-val együtt; ha fut valami,
+  csak külön figyelmeztetéssel, a futó munkát megszakítva). Leállítás után a lap
+  kiírja: újraindítás a START_CREATOR_HUB.cmd-vel.
+- Ablak nélküli Hub: a START_CREATOR_HUB.cmd fekete ablaka csak indulásig látszik,
+  utána bezárul; a szerver a háttérben fut, kimenete a data\logs\hub.log naplóba megy
+  (5 MB fölött hub.prev.log). Ha az indulás elszáll, az ablak nyitva marad a napló
+  végével. Az önújraindítás is ablak nélkül indítja az új példányt.
+- Tálcaikon az óra mellett (Hub-Tray.ps1): Creator Hub megnyitása (dupla katt is) ·
+  Újraindítás (ha fut valami: „a futó munka után?”) · Leállítás (megerősítéssel) ·
+  Napló megnyitása · Ikon elrejtése. Az ikont maga a Hub indítja, és vele együtt áll le
+  (újraindításkor új ikon jön). Hibanapló: data\logs\tray.log.
+- ⏻ Hub menü: új „📄 Napló megnyitása” pont (Jegyzettömbben).
+- Előzmények lapozás: lapváltás után a lista tetejére ugrik; a „256 találat” mellett
+  felül is van egy kis lapozó (‹ 3 / 11 ›).
+- JAVÍTÁS · „Máshova…” mentés: nem ugrik fel mellé üres fekete PowerShell-ablak;
+  a Mentés másként ablak a böngésző elé kerül (csak WinForms, lefordított segédkód nélkül –
+  egy korábbi próbaváltozat ideiglenes DLL-jét az Avira tévesen veszélyesnek jelölte).
+- Hub önújraindítás (/api/hub/restart, /api/hub/stop, /api/hub/power): csak akkor
+  indul újra, ha nincs futó vagy sorban álló generálás, node-frissítés és
+  ComfyUI-feladat. Egy kis segédfolyamat megvárja a port felszabadulását, és új
+  „ArtofTomworks Creator Hub” szerverablakban indítja a Hubot. A nyitott oldal ezt
+  észleli (/api/health boot-azonosító) és magától újratölt; gépelés közben csak jelez.
+- Előzmények: a „⤓ Workflow mentése” helyett „⟲ Workflow betöltése”. Egy kattintással
+  visszatölti azt a pontos workflow-t, amivel az eredmény készült (prompt, méret, LoRA-k),
+  a seedet rögzítve, és ha volt, a kezdőképet is. A mentés a Részletek → Saját workflow
+  részben továbbra is elérhető; a kész videók a gráfot amúgy is tartalmazzák.
+- A Hubon kívül törölt fájlok (pl. Explorerből törölt modell) azonnal eltűnnek a Modellek /
+  Készlettár listából, újraindítás vagy újraszkennelés nélkül.
+- JAVÍTÁS · Nincs több „generálómodell-betöltő szükséges … checkpoint-ágból” figyelmeztetés
+  modellváltáskor: ha ugyanaz a H3/LTX fájl a diffusion_models és a checkpoints mappából is
+  látszik, a modellválasztó csak a működő bejegyzést mutatja. Ha egy régebbi terv még a
+  checkpoint-ágra mutat, a Hub magától a működő párjára vált.
+- JAVÍTÁS · Modellhez illő lépésszám automatikusan: modellváltáskor a Hub eddig átvitte
+  az előző modell lépésszámát (pl. LTX 20 → DaSiWa Turbo, amelynek 8 kell), és ezt meg
+  is jegyezte. Most a lépésszám mindig a kiválasztott modellé. A modellt a fájlnévből is
+  felismeri (sok fájlban nincs beágyazott cím): DaSiWa Hybrid V4 Turbo 8 lépés euler,
+  H3 Eros Max 6 lépés res_multistep, egyéb Turbo/Lightning H3 8 lépés. A korábban
+  tévesen megjegyzett lépésszámot egyszer kijavítja (értesítéssel); amit ezután te
+  állítasz be egy modellhez, azt továbbra is megjegyzi. Kézi módot nem érint.
+- JAVÍTÁS · Téves „A ComfyUI indítása túl sokáig tart” hiba: ha a már elindult motor
+  egy pillanatra lassan válaszolt (nehéz munka, memória-felszabadítás), a Hub azonnal
+  indítási hibát jelzett. Most a futó, már egyszer elkészült motor dolgozik tovább,
+  az indítási időkorlát csak az első indulásra vonatkozik, külső motornál pedig csak
+  három egymást követő kiesés után vált leállítottra. Valódi összeomlást továbbra is jelez.
+- ÚJ · Automatikus memóriakezelés modellváltáskor: minden generálás előtt a Hub
+  összeveti a következő munka fő modelljét azzal, amit a ComfyUI utoljára futtatott
+  (a ComfyUI saját előzményeiből, így a Hubon kívüli futások is számítanak). Ha
+  eltér (pl. LTX → H3, Krea2 → LTX), előbb kiüríti a ComfyUI memóriáját. Azonos
+  modellnél nem ürít, így a sorozatgenerálás gyors marad. Hiba esetén sosem állítja
+  meg a generálást.
+- ÚJ · Workflow mentése a betöltésnél is (Részletek → Saját workflow · haladó,
+  a „Workflow betöltése” mellett): a most betöltött workflow-t változatlanul,
+  a saját prompt/seed/méret/LoRA-beállítások nélkül menti a Mentett_workflowk
+  mappába, dátumos néven, felülírás nélkül; a Készlettárban azonnal megjelenik.
+- A Jelenetsor összecsukható („▾ Összecsukás / ▸ Kinyitás”); összecsukva csak a
+  címsor és a részek száma látszik. A böngésző megjegyzi a választást.
+- ÚJ · Kényelmes nézet: A− / % / A+ a fejlécben. Az egész felületet arányosan
+  nagyítja (100–145%), a böngésző megjegyzi. Alapérték 110%; a százalékra
+  kattintva vissza 100%-ra.
+  Nagyítva is teljes képernyőn maradnak a képnéző és a munkaterület alsó
+  gombsorai (a teljes képernyős elemek a nagyítással arányosan igazodnak).
+- Új ComfyUI-node formátumok (ComfyUI 0.46) helyes beolvasása a saját workflow-ból:
+  legördülő (COMBO) mezők, mint a KSamplerSelect samplere és a felskálázó modell;
+  függő választómezők (pl. ResizeImageMaskNode „scale longer dimension” + méret,
+  SaveVideo formátum/kodek); 'FLOAT,INT' típusú mezők. Korábban ezek kimaradtak
+  vagy elcsúsztak (pl. a hang batch_size 1 helyett 25 lett), és a generálás
+  „A sampler vagy scheduler nincs a háttér támogatott listájában” hibával állt meg.
+- Saját workflow-nál a Hub csak azt a mintavételi beállítást ellenőrzi, ami a
+  forrásban valóban szerepel (az LTX ManualSigmas láncban nincs scheduler).
+- Videóugrás javítása LTX-en: kímélő memóriamódban (12 GB VRAM) a Hub a dekódolást
+  32 képkockás darabokra, 4 képkocka átfedéssel bontotta, ami 24 képkockánként
+  (másodpercenként) elmosódást és megugrást okozott. LTX-nél most legfeljebb
+  128 képkocka (24 fps-nél kb. 5 mp) egyben dekódolódik, hosszabb klipnél
+  32 képkockás átmenettel. A térbeli darabolás (512 px) marad. H3-nál változatlan.
+- Egylépcsős LTX és minden más ág működése változatlan (összevetve a 0.15.4-gyel).
+- Továbbra sem kezelt: algráfos workflow (pl. LTX 2.5 Pro az interpolációs
+  algráffal), AddGuide/referenciás lánc, CineDirector saját rendező-node-jai.
+
+KORÁBBI KIADÁS
+
+ARTOFTOMWORKS CREATOR HUB — 0.15.4
+2026. november 21.
+
+- Jelenetfolytatás: a tényleges utolsó dekódolható képkockát veszi át.
+- A kerekített videóhossz miatt az utolsó kép mögé eső keresés nem okoz
+  többé hiányzó ideiglenes PNG-fájlra hivatkozó ENOENT hibát.
+- A videónál hosszabb hangsáv mellett is megtalálja az utolsó képet.
+- A hagyományos időpont-alapú képkockakivágás is kezeli a végpont kerekítését.
+- Az eredeti videó és kezdőkép változatlan; új generálás nem szükséges.
+- A külön hangmező, H3-fájlnevek és panelátrendezés továbbra is későbbi feladat.
+
+ARTOFTOMWORKS CREATOR HUB — 0.15.3
+2026. november 21.
+
+- Letöltéskor a kiválasztott verzió forrás-bélyegképe is mentődik, ha elérhető.
+- Civitai verzióképek, illetve egyértelmű Hugging Face / GitHub képfájlok támogatása.
+- Saját bélyegkép utólag: modellkártya ☰ → Bélyegkép hozzáadása / cseréje.
+  A részleteknél is elérhető. A képet legfeljebb 640 pixeles JPEG-re kicsinyíti.
+- A saját kép elsőbbséget kap, automatikus letöltés nem írja felül.
+- Sikertelen vagy hiányzó előnézet nem akadályozza a modell letöltését.
+- A bélyegképek frissítése azonnali, nincs beragadt böngésző-gyorsítótár.
+- Az új mentéshez a Hub hátterét is újra kell indítani.
+
+ARTOFTOMWORKS CREATOR HUB — 0.15.2
+2026. november 21.
+
+- Előzmények: első és utolsó oldal, közvetlen ugrás oldalszámmal vagy Enterrel.
+  A szűrések megmaradnak, a beírt oldalszámot az elérhető tartományhoz igazítja.
+- Modellkártyák: közvetlen menü kiválasztáshoz, kedvenchez, fájlhelyhez és törléshez.
+  Törléskor egy ablakban választható lomtár vagy végleges törlés, pontos fájlhellyel
+  és külön jóváhagyással. A csoportos kijelölés is megmarad.
+- Előnézeti képnagyítás: jól látható, rögzített százalékjelző a kép jobb alsó
+  sarkában és erősebb felső kijelzés. Görgőre, 1:1-re és képernyőre illesztésre
+  azonnal frissül; 100% az eredeti képméret. Csak felületi frissítés.
+- A modellforrások kulcsai Windows-fiókhoz kötött titkosítással megjegyezhetők,
+  és Hub-újraindítás után is betöltődnek. A csak munkameneti használat megmarad.
+- Látható a betöltött / titkosítva mentett / hiányzó / fel nem oldható állapot.
+  A kulcs külön elfelejthető, csak a kijelölt szolgáltatásnak küldi tovább.
+- Hibás hitelesítésű letöltés mellől közvetlenül nyitható a megfelelő kulcsmező.
+  A korábban sikertelen feladat a kulcs mentése után külön újrapróbálható.
+- A védelem Windows DPAPI CurrentUser; szolgáltatáshoz kötött tartalommal.
+  A kulcs nem kerül a processz parancssorába, naplóba, nyílt szövegű JSON-ba
+  vagy státuszválaszba. Feloldási hibánál nincs nyílt szövegű visszaesés.
+- Rejtett Windows-segédfolyamat, nyolc nyelv; valódi DPAPI- és böngészős tesztek.
+- Nulla letöltött bájtnál 0 B jelenik meg a félrevezető ismeretlen méret helyett.
+
+KORÁBBI KIADÁS
+
+ARTOFTOMWORKS CREATOR HUB — 0.15.1
+2026. november 21.
+
+- A modellböngésző látható, böngészőben megjegyzett kapcsolót kapott az
+  NSFW-besorolású Civitai modellek név szerinti kereséséhez. Alapból kikapcsolt.
+- A civitai.red modelloldal címe és a puszta modellazonosító is használható.
+  A lekérés a meglévő civitai.com API-n marad; nem bővült a letöltési vagy
+  hozzáférésikulcs-továbbítási címlista. A közvetlen találat rendes nevet kap.
+- A lapozás megtartja a választott besorolás- és típusszűrést; változtatáskor
+  új keresést kér. A besorolás miatt korlátozott modellek képeit nem tölti be.
+- Checkpoint keresésnél a Civitai által checkpointnak jelölt MOSS fájlok
+  megmaradnak akkor is, ha helyben generálómodell mappába valók.
+- Jib Mix Moss Realistic név és civitai.red link élő API-val ellenőrizve,
+  V1/V2/V3 változatok és fájlok elérhetők. Valódi modellletöltés nem indult.
+
+KORÁBBI KIADÁS
+
+ARTOFTOMWORKS CREATOR HUB — 0.15.0
+2026. november 21.
+
+- Következő jelenetrész közvetlenül a kész videó alatt: a forrás utolsó
+  képkockája és tényleges mentett generálási receptje alapján.
+- Külön történés-, kamera-, hang-, hossz- és seed-beállítás. A terv átvétele
+  nem indít generálást, a jelenlegi munka bezáráskor változatlan marad.
+- Vízszintes jelenetsor, visszanézés és részenkénti változatválasztás.
+  Újrageneráláskor az eredeti kezdőképet vagy az előző rész utolsó képét
+  használja; az elkészült változatokat nem írja felül.
+- A részek kapcsolata a generálási naplóban megmarad; az ágak kiválasztása
+  külön helyi mentésbe kerül. Eltérő második részhez nem fűz idegen harmadikat.
+- Kiválasztott részek együtt a valódi videóstúdió vágóasztalára küldhetők;
+  a renderelést/exportot a felhasználó külön indítja.
+- H3 és támogatott egyszerű LTX szöveges/képes források, szükség esetén
+  automatikus kezdőkép-ág. LTX-nél az eltérő kép-/hang-CFG is megmarad,
+  ismételt folytatásnál nem szaporodnak az azonos képméretezők.
+- Nyolc nyelv. Valódi CPU-s képkocka-kiolvasással és videóimporttal,
+  tesztböngészőben ellenőrizve; valódi GPU-generálás nem indult.
+
+KORÁBBI KIADÁS
+
+ARTOFTOMWORKS CREATOR HUB — 0.14.5
+2026. november 20.
+
+- A pyproject.toml puszta projektverzió-változása nem blokkolja a node-frissítést.
+  A tényleges függőség-, build- és telepítőváltozások továbbra is külön kezelendők.
+- A helyi módosítás miatt kihagyott csomagnál már az áttekintésben is láthatók
+  az érintett fájlok; saját módosítást nem ír felül.
+- Jól látható összesítés mutatja, hány csomag frissült, maradt ki vagy hibázott.
+  Az eredmények közvetlenül elérhetők; a kihagyás nem tűnik elakadt folyamatnak.
+
+KORÁBBI KIADÁS
+
+ARTOFTOMWORKS CREATOR HUB — 0.14.4
+2026. november 20.
+
+- Kompakt, kereshető, lapozható node-lista csoportos kijelöléssel; a kijelölés
+  keresések között is megmarad. Érthető „17 új módosítás” felirat.
+- Egyetlen áttekintés után ellenőrzött Git-mentés és csoportos kódfrissítés,
+  csomagonkénti folyamat- és eredményjelzéssel.
+- A helyi módosításokat megőrzi. Függőség-, telepítő- vagy almodulváltozás
+  esetén még a kód módosítása előtt kihagyja a csomagot. Nem fut pip/install.py.
+- Az utolsó tíz műveletből visszaállítható a korábbi csomagverzió. A saját motor
+  újraindítása külön gomb és csak üres feladatsornál történhet. Megállítás
+  kérhető az aktuális csomag után.
+- Frissítés közben blokkolja az új generálást és a motor átállítását. A Hub
+  indítója is megvárja az aktív node-frissítés végét.
+- Az új forrásellenőrzés nem tünteti el a korábbi, dátummal jelölt találatokat.
+  A szoftver- és node-ellenőrzés várakozása független.
+- Nyolc nyelv, valódi Git-mentési/frissítési/visszaállítási és böngészős
+  ellenőrzések. Telepített saját node-csomag nem frissült a tesztek során.
+
+KORÁBBI KIADÁS
+
+ARTOFTOMWORKS CREATOR HUB — 0.14.3
+2026. november 20.
+
+- Frissítések jelzés a fejlécben, kompakt részletpanellel és a funkciókeresőből
+  is elérhetően, mind a nyolc nyelven.
+- Külön telepített/elérhető Hub- és stabil ComfyUI-verzió, kiadási megjegyzések,
+  forráslinkek. Az automatikus ellenőrzés 12 órás gyorsítótárat használ.
+- Külön kézi ellenőrzés az ismert GitHub-forrású node-csomagokhoz, korlátozott
+  méretű csoportokban, ágtörténet-ellenőrzéssel és háromperces várakozással.
+- Hálózati hiba, ismeretlen forrás vagy eltérő ág esetén nem találgat.
+  Ez értesítés: nem telepít, nem frissít Git-mappát és nem indít újra motort.
+- 213 automatizált teszt sikeres; böngészőben nyolc nyelv, kis képernyő,
+  kiadási megjegyzések és a generálási értékek megőrzése is ellenőrizve.
+  Új GPU-generálás nem indult.
+
+KORÁBBI KIADÁS
+
+ARTOFTOMWORKS CREATOR HUB — 0.14.2
+2026. november 19.
+
+- Az újonnan generált képek fájlnevében megjelenik a ténylegesen használt
+  modell neve. A kiterjesztés és könyvtárút kimarad, a hosszú név legfeljebb
+  64 karakter, a Windowsban problémás karakterek helyett aláhúzás szerepel.
+- Egyedi workflow és modellenként eltérő sorozat esetén is a végleges
+  gráfból jön a név. Az exportált workflow ugyanazt az útvonalat mutatja.
+- A dátumos Images mappák és az egyedi sorozatazonosítók megmaradnak.
+  A már elkészült fájlokat és korábban előkészített munkákat nem nevezi át.
+- 205/205 automatizált ellenőrzés sikeres. Új GPU-generálás nem indult.
+
+KORÁBBI KIADÁS
+
 ARTOFTOMWORKS CREATOR HUB GLOBAL — 0.14.1 JAVÍTÓKIADÁS
 2026. november 19.
 

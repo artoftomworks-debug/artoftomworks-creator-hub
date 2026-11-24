@@ -20,3 +20,7 @@
 .studioLayout .dockActiveAccessories .activeLora button:hover{background:#633c35;border-color:#ffc0ad;color:#fff}
 
 .studioLayout .generationFooter .actions{max-width:100%;min-width:0}#resourceDialog{width:min(650px,94vw);max-height:88dvh;overflow:auto}#resourceDialog::backdrop{background:#000b}#resourceDialog p{font-size:13px}#openResources{white-space:nowrap}
+/* 0.16 DEV — fülcsoportok a lenti eszközsávon (Eredmények · Hozzávalók · Eszközök · Haladó) */
+.dockTabs .dockGroup{align-self:center;margin:0 2px 0 12px;padding-left:12px;border-left:1px solid #ffffff2e;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:#8fa7b3;white-space:nowrap;pointer-events:none}
+.dockTabs .dockGroup:first-child{margin-left:2px;padding-left:0;border-left:0}
+@media (max-width:1500px){.dockTabs .dockGroup{font-size:0;margin-left:6px;padding-left:6px}.dockTabs .dockGroup:first-child{display:none}}

@@ -2,9 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {automaticSamplingDefaults,selectionSampling,migrateSampling,samplingProfileKey,saveSamplingProfile,cleanSampling} from '../sampling-policy.mjs';
 const flux={family:'flux1'},krea={family:'krea2'};
-test('unseen model starts with native pair, keeps user steps, and does not inherit another family sampler',()=>{
+test('unseen model starts with native pair and its own step count (0.16+: steps belong to the model), and does not inherit another family sampler',()=>{
  const sampling={steps:32,cfg:7,sampler:'lcm',scheduler:'karras',denoise:.25};
- const s=selectionSampling({sampling,model:flux,previousFamily:'sdxl'});assert.equal(s.steps,32);assert.equal(s.cfg,1);assert.equal(s.sampler,'euler');assert.equal(s.scheduler,'normal');assert.equal(s.denoise,1);
+ const s=selectionSampling({sampling,model:flux,previousFamily:'sdxl'});assert.equal(s.steps,automaticSamplingDefaults(flux).steps);assert.equal(s.cfg,1);assert.equal(s.sampler,'euler');assert.equal(s.scheduler,'normal');assert.equal(s.denoise,1);
  assert.equal(selectionSampling({sampling,model:flux,previousFamily:'sdxl',useImage:true}).denoise,.25);
  assert.deepEqual(selectionSampling({sampling,model:flux,policy:'manual'}),{...automaticSamplingDefaults(flux),...sampling});
 });
