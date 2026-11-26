@@ -87,7 +87,7 @@ export function createWorkflowSaver({root,history,runner,library,fetchImpl=fetch
   const name=String(data.name||'workflow').replace(/\.api\.json$|\.json$/i,'');let base=stamp(Date.now())+'_'+(slug(name,70)||'workflow'),ext=ui?'.json':'.api.json',folder=dir;
   if(target==='comfy'){
    if(!ui)throw Error('A ComfyUI workflow-listájába szerkeszthető (UI) workflow menthető, ez a forrás API-formátumú. Mentsd a Hub mappába – a ComfyUI-ba a fájl behúzásával így is megnyitható.');
-   const comfy=await comfyDir?.();if(!comfy)throw Error('Nem ismert a ComfyUI mappája. A Motor beállításainál add meg, vagy mentsd a Hub mappába.');
+   const comfy=await comfyDir?.();if(!comfy)throw Error('Nem ismert a ComfyUI mappája. A ComfyUI beállításainál add meg, vagy mentsd a Hub mappába.');
    folder=path.join(comfy,'user','default','workflows','ArtofTomworks_Hub');
   }
   if(target==='custom'){

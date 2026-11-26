@@ -1,72 +1,25 @@
-![ArtofTomworks Creator Hub Global](assets/cover.png)
+![Singularity cover](assets/cover.png)
 
-# ArtofTomworks Creator Hub Global
+# ArtofTomworks Creator Hub 0.17.1 — Singularity
 
-**Your local image & video studio, powered by ComfyUI.** Public Beta **0.17.0**.
+Singularity brings single- and multi-model image and video creation into one local workspace. This Windows public beta uses your ComfyUI installation and your own models. The interface starts in English. Change it under Settings → Language.
 
-Pick a model, write a prompt, add LoRAs and press **Generate** — in a clear workspace with live preview, organized history and creative tools around it. ComfyUI does the generation in the background; its graph editor is one click away whenever you want it. SwarmUI is not required.
+## Highlights
 
-**EN · HU · DE · FR · ES · IT · PT · PL** — a remembered interface language that never changes your prompts, model names or settings.
+- A dedicated multi-model workspace with editable prompts, model cards, LoRAs by family, per-model checks and previews, and prompt transfer to single-model creation.
+- Save custom sizes and recall them from Quick Size. Optional local AI recommends framing from the prompt. The Hub proposes a resolution and waits for you to apply it.
+- Optional AI assistance for video motion, sampling steps, controlled trials, saved recipe comparison, storyboard continuity and reviewing video sample frames.
+- Search public LoRA catalogs from the Hub and optionally ask local AI to review the results. Search uses the terms you approve. LTX 2.3 LoRAs may be shown as candidates for LTX 2.5, with compatibility to be verified per LoRA.
+- A clearer generation error panel, copyable filtered diagnostics and an optional local AI explanation. Group checks and queue submission share plan rules.
+- A compact History grid with side arrows. The model comparison grid keeps seed alignment. New-feature tags can be dismissed and restored from Settings.
+- Replace a video segment using a separately generated clip in Video Studio. Six-frame AI review helps spot visible jumps between samples.
 
-## ⬇ Download
+## Start on Windows
 
-| | |
-|---|---|
-| **Windows x64 (recommended)** | [ArtofTomworks_CreatorHub_0.17.0_GLOBAL_Windows_x64.zip](downloads/ArtofTomworks_CreatorHub_0.17.0_GLOBAL_Windows_x64.zip) — includes portable Node.js 24 |
-| **Companion workflows** | [ArtofTomworks_CreatorHub_0.17.0_Companion_Workflows.zip](downloads/ArtofTomworks_CreatorHub_0.17.0_Companion_Workflows.zip) — LTX 2.5 image-to-video and Krea2 upscalers, also inside the main ZIP |
+Extract the entire Windows ZIP. Double-click **START_CREATOR_HUB.cmd** in the extracted application folder and point the Hub at your ComfyUI installation. The Windows ZIP includes Node.js. The GitHub source snapshot requires Node.js 22 or later on PATH. Models, LoRAs, ComfyUI and Ollama are separate. Text-based local advice requires an available Ollama model. Image-based review requires a vision-capable model. Prompt-based tags also work without Ollama.
 
-1. Extract the **entire** ZIP into a writable folder (not Program Files).
-2. Run `START_CREATOR_HUB.cmd`. The Hub opens in your browser and keeps running in the background with a tray icon.
-3. Choose a model that already works in your ComfyUI, enter a prompt and generate one image first.
+A fresh install has no private drafts, history, profiles, saved credentials or queued jobs. To keep an existing installation, extract the release into a new folder first and make a backup before migrating data. Do not push the data folder that the Hub creates while running.
 
-**Requires an existing, working ComfyUI** with its own Python environment, models, encoders/VAEs and the custom nodes they need. ComfyUI, model weights, Ollama and the optional 9B assistant model are **not** included. A MediaPipe pose landmark asset is included under its own license.
+The companion archive contains example LTX and Krea workflows. Check their model and node requirements before running them.
 
-[English instructions](README_EN.txt) · [Magyar útmutató](README_HU.txt) · [Changes](CHANGELOG_EN.txt) · [Update](UPDATE_EN.txt) / [Frissítés](UPDATE_HU.txt) · [First start](START_HERE_EN.txt) · [Quick-start guide](GUIDE_EN.md) / [Magyar guide](GUIDE_HU.md)
-
-## ✨ New in 0.17.0
-
-- **⧉ Several models at once** for images and video — models × formats in one start, a series bar with pause/resume/cancel, a **▦ grid view** (models × seeds) and optional local-AI suggestions and ranking.
-- **Two-stage LTX 2.5** custom workflows; **save or reload the exact workflow** of any result from History.
-- **Scenes and stories** — next-scene assistant, storyboard → short film (crossfades, music), character book, variation family tree.
-- **🔊 Sound** — a sound plan for audio-capable models (LTX 2.5, MiniMax H3) and a sound tool for finished videos (fades, −16 LUFS levelling, music with ducking).
-- **💡 Ideas box** (Alt+I), **start image guard**, **📷 camera** capture, **🎨 themes** and backgrounds.
-- **🙈 Privacy switch** (Ctrl+Alt+H), optional **👤 profiles** and **🛡 parental controls**.
-- **Out-of-memory self-healing**, automatic memory release on model change, windowless server with tray icon.
-- **Companion workflows**: LTX 2.5 *Draft → Final* and *Simple* (EN/HU), Krea2 fast 2× and detailed 4× upscalers.
-
-Full list: [CHANGELOG_EN.txt](CHANGELOG_EN.txt).
-
-## In the workspace
-
-- Image and video generation with resolution presets, custom sizes and sampling controls.
-- Random / fixed / stepped seeds, series, visible stop controls and time estimates.
-- Local and online model browsing (Civitai, Hugging Face), favourites, thumbnails and compatibility-aware LoRA choices.
-- Active model and LoRA strip with temporary disable/enable.
-- Date-based history with favourites, ratings, categories, search, batch selection and trash.
-- Large media viewer, metadata inspection, explicit parameter reuse and workflow reload.
-- Creative recipes, camera-motion prompts, pose tools, comparison and grid view.
-- Image editor, Loop Lab, video workshop and finishing, Prompt Studio and Scene DNA.
-- Optional local AI assistant whose suggestions change nothing until you apply them.
-
-Automatic model assembly supports documented branches of SD 1.x/2.x, SDXL, FLUX.1, Krea 2, MOSS, MiniMax H3 and LTX 2.5 with matching installed components. Recognition alone does not mean every architecture, quantization or custom-node combination is supported; a suitable custom workflow can be loaded for other cases.
-
-## Source setup and checks
-
-Node.js 22+ is required. No npm installation is needed.
-
-```text
-node server.mjs --open
-node --test tests/*.test.mjs tests_dev/*.test.mjs
-```
-
-The unit/service tests use controlled backends and do not generate with a real AI model. The optional CPU Loop integration test is enabled by `HUB_TEST_PYTHON`. The legacy browser regression (`python tests/browser_global_test.py`) needs Python 3 + aiohttp, `HUB_TEST_NODE` and `HUB_TEST_BROWSER` (Chromium). See [VALIDATION_EN.txt](VALIDATION_EN.txt) for what was tested in this release.
-
-User data, local model weights, credentials and developer caches are excluded. Back up the Hub `data` folder **and** your ComfyUI output before upgrades. Closing a browser tab does not cancel a running generation.
-
-## License, credits and support
-
-Free personal and commercial creative use under [LICENSE.txt](LICENSE.txt). Software resale is restricted; this is a source-available Free Use license. Third-party components and models keep their own terms: [credits](THIRD_PARTY.md).
-
-[☕ Support development on Ko-fi](https://ko-fi.com/artoftomworks)
-
-Please report the version, model family, action and copied error with private details removed. This is a public beta; no universal compatibility or GPU speed is promised.
+See LICENSE.txt and THIRD_PARTY.md for terms. See VALIDATION_EN.txt for the checks performed and the remaining live tests.

@@ -16,14 +16,26 @@ export function createLocalAIRuntime({root,sourceRoot,fetchImpl=fetch,spawnProce
  }catch{return null;}}
  async function discover(){
   if(candidates)return candidates;const rows=[],seen=new Set();let at=sourceRoot||root||process.cwd();
+  async function addPortable(base){
+   if(seen.has(base))return;
+   seen.add(base);
+   const modelDir=path.join(base,'models');
+   const models=(await stat(modelDir).catch(()=>null))?.isDirectory()?modelDir:undefined;
+   rows.push({exe:path.join(base,'ollama.exe'),models});
+   const versions=(await readdir(base,{withFileTypes:true}).catch(()=>[]))
+    .filter(v=>v.isDirectory()&&/^v?\d+(?:\.\d+)+$/.test(v.name))
+    .sort((a,b)=>b.name.localeCompare(a.name,undefined,{numeric:true}));
+   for(const version of versions)rows.push({exe:path.join(base,version.name,'ollama.exe'),models});
+  }
   for(let n=0;n<8;n++){
    for(const base of [path.join(at,'runtime','ollama'),path.join(at,'tools','ollama-portable'),path.join(at,'sites','art-of-tomworks-prompt-studio','tools','ollama-portable')]){
-    if(seen.has(base))continue;seen.add(base);const models=(await stat(path.join(base,'models')).catch(()=>null))?.isDirectory()?path.join(base,'models'):undefined;
-    rows.push({exe:path.join(base,'ollama.exe'),models});
-    const versions=(await readdir(base,{withFileTypes:true}).catch(()=>[])).filter(v=>v.isDirectory()&&/^v?\d+(?:\.\d+)+$/.test(v.name)).sort((a,b)=>b.name.localeCompare(a.name,undefined,{numeric:true}));
-    for(const version of versions)rows.push({exe:path.join(base,version.name,'ollama.exe'),models});
+    await addPortable(base);
    }
    const next=path.dirname(at);if(next===at)break;at=next;
+  }
+  const nodeDirectory=path.dirname(process.execPath);
+  if(path.basename(nodeDirectory).toLowerCase()==='node-portable'){
+   await addPortable(path.resolve(nodeDirectory,'..','ollama-portable'));
   }
   const home=env.USERPROFILE||os.homedir(),local=env.LOCALAPPDATA||path.join(home,'AppData','Local');
   rows.push({exe:path.join(local,'Programs','Ollama','ollama.exe')},{exe:path.join(env.ProgramFiles||'C:/Program Files','Ollama','ollama.exe')});

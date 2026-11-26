@@ -1,45 +1,22 @@
-CREATOR HUB GLOBAL 0.17.0 — VALIDATION
+# Singularity 0.17.1 — validation
 
-Automated tests: 352/352 passed (1 skipped: optional CPU Loop integration
-fixture without a configured Python media environment) in the source tree,
-in the staged release copy and in the staged public repository.
-No new software or model was downloaded for tests.
+## Clean start
 
-Clean Windows ZIP: 401 files; every archived SHA256 verified against
-RELEASE_MANIFEST.json after extraction. No data folder, user history,
-drafts, profiles, saved workflows, credentials, model weights, local media
-index or developer notes are included. A packaging helper with a private
-path and two author-only ComfyUI node folders (H3/LTX CineDirector) were
-excluded; the CineDirector packages are published separately.
-Official Node.js 24 x64 runtime retained from 0.14.1 (hash verified).
+- Windows launcher check passed with bundled Node.js v24.19.0.
+- An isolated loopback server using the Windows package files reported 0.17.1, served an English first-start setting and returned empty History and draft. Main UI, New labels, creative advice, grid and English locale routes responded.
+- The Node.exe SHA256 was compared with the bundled upstream Windows x64 checksums.
+- No live ComfyUI generation, Ollama inference or end-to-end browser workflow was run on the staged release.
+- Video segment replacement uses a separate clip and an editable splice. Full-motion/audio evaluation and native Retake are outside this release.
 
-Start test from the extracted ZIP (no existing data): server starts,
-reports 0.17.0, serves the interface and all new modules; without ComfyUI
-it shows the expected engine message. Browser check (Chromium): interface
-opens in English on an English system, no untranslated Hungarian text in
-the main Image and Video views (EN, DE, PL checked), no page errors.
+## Test suite
 
-Update test: a 0.14.1 instance created a draft and history settings, was
-stopped, and the 0.17.0 program files were copied over it keeping data.
-0.17.0 started, restored the draft (prompt and project name) unchanged,
-profiles remained disabled, history and ideas loaded empty without errors.
+386 passed, 3 failed, 2 skipped out of 391 tests in the staged source snapshot.
 
-Live checks on the author's Windows machine during development: ideas box,
-video sound tool on a real video, themes with background, sound plan
-visibility for H3/LTX, start image chip and dialog, privacy switch,
-profile setup and login screen, camera dialog (without camera stream),
-“Several models at once” with a removed start image (reported fixed by
-the author). Profiles and parental controls were tested end-to-end on an
-isolated test server.
+- Two older assertions expect conflicting model metadata or an incomplete H3 LoRA signature to produce no family match. The current detector returns a family in those cases and records metadata mismatch where applicable. Model/LoRA identification in these edge cases requires review before a stable release.
+- New strings passed the English coverage check. The seven-language check still flags missing native translations for newer controls in the other locale packs, where the interface can fall back to English.
 
-Companion workflows: converted with the Hub’s own workflow compiler
-(LTX two-stage path) and every node type checked against a live ComfyUI
-0.46 object list; the start image uses ComfyUI’s built-in example.png.
-No generation was queued for the companion files.
+## Privacy and integrity
 
-NOT TESTED in this release: real webcam capture; profile mode and parental
-controls on the release machine; real GPU generation quality for every model
-family; the legacy Python browser regression script (aiohttp unavailable in
-the build environment; replaced by the Chromium checks above); Windows
-installer behaviour of the extracted ZIP on a second, clean Windows machine.
-Graph defaults are starting values, not universal fine-tune presets.
+The application archive was rebuilt from the previous public file list and explicitly selected runtime modules and dictionaries. The source archive includes public tests and synthetic/test fixtures. The companion archive contains public example workflows.
+
+No application data directory, profile sessions, histories, drafts, personal model catalogue, model weights, output media, logs, credential store, developer handoff notes, or Git history are included. Known private path and credential patterns were scanned on staged text and ZIP entry names. Archive contents were re-read and SHA256-compared to staging. The cover images were generated for this release.

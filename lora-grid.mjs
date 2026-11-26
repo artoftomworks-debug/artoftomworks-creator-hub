@@ -1,1 +1,7 @@
+export function trialStrengths(value){
+ const strength=Math.round(value*100)/100;
+ if(!Number.isFinite(strength)||strength===0||Math.abs(strength)>4)throw Error('A LoRA-próbához adj meg nullától eltérő erősséget.');
+ const alternate=Math.round((strength+(Math.abs(strength)>=3.8?-.15:.15)*Math.sign(strength))*100)/100;
+ return [0,strength,alternate];
+}
 export function loraGrid(plan,{lora,strengths,seed,syncClip=true}){if(!Array.isArray(strengths)||strengths.length<1||strengths.length>8||new Set(strengths).size!==strengths.length||strengths.some(v=>!Number.isFinite(v)||Math.abs(v)>4)||!Number.isSafeInteger(seed)||seed<0)throw Error('Hibás LoRA-próbarács: 1–8 erősség és érvényes közös seed szükséges.');const base=plan.shots[0],rows=[...(base.controls?.loras||[]),...(base.controls?.addedLoras||[])];if(!rows.some(r=>r.on&&r.name===lora))throw Error('Bekapcsolt, kompatibilis LoRA-t válassz a próbához.');if(plan.shots.length!==1)throw Error('A próba egyetlen alapképből indul.');return {...plan,title:'LoRA-próbarács · '+lora,projectName:'LoraTrial',shots:strengths.map((strength,i)=>{const s=structuredClone(base);s.id='trial-'+(i+1);s.title='LoRA '+strength+' · '+lora;s.controls.seed=seed;for(const row of [...(s.controls.loras||[]),...(s.controls.addedLoras||[])])if(row.name===lora){row.on=strength!==0;row.strength=strength;if(syncClip&&row.clip!==null)row.clip=strength;}return s;})};}

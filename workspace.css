@@ -24,3 +24,9 @@
 .dockTabs .dockGroup{align-self:center;margin:0 2px 0 12px;padding-left:12px;border-left:1px solid #ffffff2e;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:#8fa7b3;white-space:nowrap;pointer-events:none}
 .dockTabs .dockGroup:first-child{margin-left:2px;padding-left:0;border-left:0}
 @media (max-width:1500px){.dockTabs .dockGroup{font-size:0;margin-left:6px;padding-left:6px}.dockTabs .dockGroup:first-child{display:none}}
+
+/* 0.17: kattintható LoRA-sáv cím */
+.loraStripOpen{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+.loraStripOpen:hover,.loraStripOpen:focus-visible{color:var(--accent,#f0c060)}
+#activeLoras:not(:has(.activeLora)){cursor:pointer}
+

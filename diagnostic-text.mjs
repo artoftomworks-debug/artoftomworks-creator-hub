@@ -33,7 +33,36 @@ export function friendlyError(raw){
  if(/execution_interrupted|ComfyUI execution interrupted|Processing interrupted/i.test(text))
   return {kind:'interrupted',title:'A generálás megszakadt.',text:'Valaki (vagy a Hub) leállította a futást. A már kész képek megmaradtak; a generálás újraindítható.',actions:[]};
  if(/Prompt outputs failed validation|Required input is missing|Return type mismatch|Exception when validating/i.test(text))
-  return {kind:'validation',title:'A ComfyUI nem fogadta el a tervet.',text:'Valamelyik beállítás vagy bemenet hiányzik vagy nem illik (például üres kép, rossz méret). Az ✦ Ellenőrzés megmutatja, melyik.',actions:['preflight']};
+  return {kind:'validation',title:'A ComfyUI nem fogadta el a generálást.',text:'Valamelyik beállítás vagy bemenet hiányzik vagy nem illik (például üres kép, rossz méret). Az ✦ Ellenőrzés megmutatja, melyik.',actions:['preflight']};
  return null;
 }
 export const friendlyLine=raw=>{const f=friendlyError(raw);return f?f.title+' '+f.text:String(raw||'');};
+
+export function shareableError(value){
+ const text=String(value)
+  .replace(/((?:api[_-]?key|token|password|authorization|secret|credential|cookie)["']?\s*[:=]\s*)(["'])[^\r\n]*?\2/gi,'$1[rejtve]')
+  .replace(/\b(?:Bearer|Basic)\s+\S+/gi,'[hitelesítés elrejtve]');
+ return redact(text)
+  .replace(/\b(?:https?|file):\/\/[^\s"'<>]+/gi,'[URL elrejtve]')
+  .replace(/(["'])(?:[a-z]:[\\/]|\\\\|\/)[^\r\n]*?\1/gi,'[útvonal elrejtve]')
+  .replace(/(?:\b[a-z]:[\\/]|\\\\|(?<!\S)\/(?:[\w.-]+\/)+)[^\r\n"'<>]*/gi,'[útvonal elrejtve]')
+  .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,'[e-mail elrejtve]')
+  .replace(/\b(?:hf_|sk-)[A-Za-z0-9_-]{10,}\b/g,'[kulcs elrejtve]');
+}
+
+export function describeError(raw,{version,models=[]}={}){
+ const friendly=friendlyError(raw);
+ const title=friendly?shareableError(friendly.title):'Hiba történt';
+ const text=friendly?.text||'A hiba oka bizonytalan. Nézd meg a technikai részleteket, vagy kérj MI-magyarázatot.';
+ const error=shareableError(raw).slice(0,12000);
+ const model=(Array.isArray(models)?models:[]).filter(name=>typeof name==='string')
+  .map(name=>shareableError(name.split(/[\\/]/).pop())).filter(Boolean).join(', ');
+ const modelLine=model?'Modell: '+model:'';
+ const header=[version&&shareableError(version),modelLine].filter(Boolean).join('\n');
+ return {
+  title,text,known:!!friendly,fix:friendly,modelLine,
+  line:friendly?title+' '+text:error,
+  report:[header,error].filter(Boolean).join('\n\n'),
+  advice:{error:error.slice(0,2400),summary:friendly?title:undefined}
+ };
+}

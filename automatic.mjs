@@ -38,7 +38,15 @@ export function createAutomatic({getObjects,fetchImpl,library}){
    let f;try{const s=await stat(hits[0].path);f=await open(hits[0].path,'r');const len=Buffer.alloc(8);await f.read(len,0,8,0);const n=Number(len.readBigUInt64LE());if(n>1&&n<=16*1024**2&&n+8<=s.size){const b=Buffer.alloc(n);await f.read(b,0,n,8);value={...headerProfile(JSON.parse(b.toString('utf8'))),favorite:!!hits[0].favorite};}}catch{}finally{await f?.close();}
   }
   if(!value.family&&!value.conflict)try{const r=await fetchImpl(backend+'/view_metadata/'+folder+'?'+new URLSearchParams({filename:name}),{redirect:'error',signal:AbortSignal.timeout(1800)});if(r.ok){const text=await r.text();if(text.length<=2*1024**2){const m=JSON.parse(text);value={...value,family:metadataFamily(m),title:String(m['modelspec.title']||'')};}}}catch{}
-  if(hits.length===1){value.localId=hits[0].id;value.preview=!!hits[0].preview;}cache.set(key,{time:Date.now(),value});return value;
+  if(hits.length===1){
+   value.localId=hits[0].id;value.preview=!!hits[0].preview;
+   if(value.family==='ltx'&&value.variant==='ltx25'){
+    try{
+     const source=(await library.detail(hits[0].id)).source;
+     value.catalogTitle=[source?.baseModel,source?.modelName,source?.version].filter(Boolean).join(' ');
+    }catch{}
+   }
+  }cache.set(key,{time:Date.now(),value});return value;
  }
  async function list(backend,refresh=false){
   let inventoryState=await library.state?.();if(inventoryState?.scan.state==='scanning')await Promise.race([library.wait(),new Promise(r=>setTimeout(r,1800))]);inventoryState=await library.state?.();const stamp=inventoryState?inventoryState.total+':'+inventoryState.scan.finished:'';
@@ -54,7 +62,7 @@ export function createAutomatic({getObjects,fetchImpl,library}){
   const loras=choices(objects,'LoraLoader','lora_name').length?choices(objects,'LoraLoader','lora_name'):choices(objects,'LoraLoaderModelOnly','lora_name');
   // Reuse local metadata; do not make hundreds of metadata HTTP calls on startup.
   const local=await library.list({kind:'lora',page:1});const loraItems=[];for(let page=1;page<=Math.min(local.pages||1,300);page++){const batch=page===1?local:await library.list({kind:'lora',page});loraItems.push(...batch.items);}
-  const lorainfo=await Promise.all(loras.map(async name=>{const hits=loraItems.filter(i=>norm(i.path).endsWith('/'+norm(name)));let family=null;if(hits.length===1){const detail=await library.detail(hits[0].id);family=detail.family;}return {name,family,favorite:!!hits[0]?.favorite,localId:hits.length===1?hits[0].id:null};}));
+  const lorainfo=await Promise.all(loras.map(async name=>{const hits=loraItems.filter(i=>norm(i.path).endsWith('/'+norm(name)));let family=null;if(hits.length===1){const detail=await library.detail(hits[0].id);family=detail.family;}else if(hits.length>1){/* 0.17.1: ugyanaz a fájl több gyökérből is látszik – ha a család mindenhol azonos, elfogadjuk */const fams=new Set();for(const h of hits.slice(0,6)){try{fams.add((await library.detail(h.id)).family||null);}catch{fams.add(null);}}if(fams.size===1&&!fams.has(null))family=[...fams][0];}return {name,family,favorite:!!hits[0]?.favorite,localId:hits.length===1?hits[0].id:null};}));
   const value={models,loras:lorainfo,samplers:choices(objects,'KSampler','sampler_name').length?choices(objects,'KSampler','sampler_name'):choices(objects,'KSamplerSelect','sampler_name'),schedulers:choices(objects,'KSampler','scheduler').length?choices(objects,'KSampler','scheduler'):choices(objects,'BasicScheduler','scheduler'),components:{vae:choices(objects,'VAELoader','vae_name'),clip:choices(objects,'CLIPLoader','clip_name')},supports:{lora:!!objects.LoraLoader,loraModelOnly:!!objects.LoraLoaderModelOnly}};
   snapshot={backend,stamp,time:Date.now(),value};return value;
  }

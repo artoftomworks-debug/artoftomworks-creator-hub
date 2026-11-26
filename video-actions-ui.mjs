@@ -1,3 +1,4 @@
+import {markNew} from './new-feature-ui.mjs';
 export function createVideoActions({$,getEntry,request,ensureBackend,onContinue,onRecipe,onDetails,onFinish,onFamily,notify}){
  const bar=document.createElement('section');bar.id='videoActions';bar.className='videoActions';bar.hidden=true;bar.setAttribute('aria-label','A megjelenített kész videó műveletei');
  const label=document.createElement('small');label.id='videoActionSource';
@@ -15,6 +16,10 @@ export function createVideoActions({$,getEntry,request,ensureBackend,onContinue,
  action('videoFolder','Mappa megnyitása',async e=>{await request('history/open',{id:e.id,action:'folder'});notify('Megnyitva az Explorerben.');});
  action('videoFamily','Kapcsolódó változatok',e=>onFamily(e.id));
  action('videoContinue','Folytatás ebből · utolsó képkocka',async e=>{const file=await lastVideoFrame(e);await onContinue(file,e);});
+ const replaceSegment=action('videoReplaceSegment','Videószakasz cseréje',e=>openSegmentReplacement({
+  entry:e,duration:$('resultVideo').duration,request,onContinue,notify
+ }));
+ menu.append(markNew(replaceSegment,'video-retake'));
  action('videoAudio','Hangjavítás · Audio Fix',e=>openTool('audio-fix',e));
  action('videoFinal','Végső ellenőrzés · Final Check',e=>openTool('final-check',e));
  action('videoRecipe','Paraméterek újrahasználata…',onRecipe);
@@ -29,4 +34,62 @@ export async function lastVideoFrame(entry){
  const response=await fetch('/api/video-tools/frame',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:entry.id})});
  if(!response.ok){const data=await response.json();throw Error(data.error||'Nem sikerült kiolvasni az utolsó képkockát.');}
  const blob=await response.blob();return new File([blob],entry.filename.replace(/\.[^.]+$/,'')+'_utolso_kepkocka.png',{type:'image/png'});
+}
+
+const replacementRanges=new Map();
+async function openSegmentReplacement({entry,duration,request,onContinue,notify}){
+ const el=(tag,text)=>{const node=document.createElement(tag);if(text)node.textContent=text;return node;};
+ if(!Number.isFinite(duration)||duration<1)throw Error('A videó előnézete nem érhető el.');
+ const dialog=el('dialog');dialog.className='generationDialog';
+ const header=el('div');header.className='sectionTitle';
+ const close=el('button','Bezárás');close.type='button';close.onclick=()=>dialog.close();
+ header.append(el('h2','Videószakasz cseréje'),close);
+ const start=el('input'),end=el('input');
+ for(const field of [start,end]){field.type='number';field.min=0;field.max=duration;field.step=.01;}
+ const saved=replacementRanges.get(entry.id);
+ start.value=saved?.start??0;
+ end.value=saved?.end??Math.floor(Math.min(duration,3)*100)/100;
+ const startLabel=el('label','Kezdet (mp)'),endLabel=el('label','Vége (mp)');startLabel.append(start);endLabel.append(end);
+ const frame=el('button','Kezdőkép átvétele a szakaszból');frame.type='button';
+ const options=el('select');options.add(new Option('Válassz kész csereklipet…',''));
+ const pick=el('label','Csereklip');pick.append(options);
+ const assemble=el('button','Szakaszcsere megnyitása a Videóstúdióban');assemble.type='button';assemble.disabled=true;
+ const status=el('p');status.setAttribute('role','status');
+ dialog.append(header,el('p',entry.filename),startLabel,endLabel,frame,pick,assemble,status);
+ dialog.addEventListener('close',()=>dialog.remove());
+ const range=()=>{
+  const a=start.valueAsNumber,b=end.valueAsNumber;
+  if(!Number.isFinite(a)||!Number.isFinite(b)||a<0||b>duration||b-a<1||b-a>15)throw Error('Válassz a videón belül egy 1–15 másodperces szakaszt.');
+  const values={start:a,end:b};replacementRanges.set(entry.id,values);return values;
+ };
+ options.onchange=()=>{assemble.disabled=!options.value;};
+ frame.onclick=async()=>{
+  frame.disabled=true;
+  try{
+   const values=range();
+   const r=await fetch('/api/video-tools/replacement-frame',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:entry.id,...values})});
+   if(!r.ok){const error=await r.json();throw Error(error.error);}
+   const file=new File([await r.blob()],'szakasz-kezdokep.png',{type:'image/png'});
+   if(!dialog.open)return;
+   dialog.close();
+   await onContinue(file,entry,{duration:values.end-values.start});
+  }catch(error){status.textContent=error.message;notify(error.message,true);}
+  finally{frame.disabled=false;}
+ };
+ assemble.onclick=async()=>{
+  let tab;
+  try{
+   const values=range();
+   tab=window.open('about:blank','_blank');
+   if(!tab)throw Error('Engedélyezd a helyi új lap megnyitását.');
+   assemble.disabled=true;
+   const result=await request('video-tools/replace',{id:entry.id,replacementId:options.value,...values});
+   tab.opener=null;tab.location.href=result.url;dialog.close();
+  }catch(error){tab?.close();status.textContent=error.message;assemble.disabled=!options.value;}
+ };
+ document.body.append(dialog);dialog.showModal();
+ try{
+  const r=await request('history?mode=video');
+  for(const e of r.items||[])if(e.id!==entry.id)options.add(new Option(e.filename,e.id));
+ }catch(error){status.textContent=error.message;}
 }

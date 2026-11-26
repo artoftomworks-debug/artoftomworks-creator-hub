@@ -5,6 +5,7 @@
 import {automaticSamplingDefaults} from './sampling-policy.mjs';
 const KEY='creatorHub.viewMode';
 const css=`body.simpleView #tab-control,body.simpleView #tab-reference,body.simpleView #tab-assets,body.simpleView #tab-pose,body.simpleView #tab-tools,body.simpleView #tab-advanced,body.simpleView #tab-engine,
+body.simpleView #previewPause,body.simpleView #previewRefresh,body.simpleView [data-generation-action=tokens],body.simpleView [data-generation-action=export],
 body.simpleView .dockTabs .dockGroup,body.simpleView #samplingControls,body.simpleView #seedControls,body.simpleView #openResources,body.simpleView #openGenerationQueue{display:none!important}
 #viewModeToggle{white-space:nowrap}#viewModeToggle.simple{border-color:#7fb3c9}
 #hiddenActive{margin:4px 0 0;font-size:13px;color:#ffe2b8}#hiddenActive[hidden]{display:none}#hiddenActive button{min-height:24px;padding:0 8px;font-size:12px;margin-left:6px}

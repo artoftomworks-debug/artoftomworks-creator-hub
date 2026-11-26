@@ -1,4 +1,4 @@
-// 0.16 DEV — ✦ Kiegészítők: modellcsaládhoz illő minőségi és stílus-kifejezések egy kattintással.
+// 0.16 DEV — ✦ Minőség és stílus: modellcsaládhoz illő minőségi és stílus-kifejezések egy kattintással.
 // Címkealapú modelleknél (SDXL, Illustrious, Pony, SD1.5) címkék – a Ponynál a score_9… sor is –, a mondatokat értő
 // modelleknél (Flux, Krea2, Qwen, MOSS, videómodellek) leíró kifejezések. Kattintás: be / ki; ugyanaz kétszer nem kerül be,
 // a saját szöveghez nem nyúl. Saját csomagok menthetők. Negatív kiegészítő csak ahol a modell használja.
@@ -31,7 +31,7 @@ function savePacks(v){try{localStorage.setItem(PACKS,JSON.stringify(v.slice(0,40
 
 export function createEnhancers({$,state,current,edited,selectedModel}){
  const css=document.createElement('style');css.textContent=`#enhancers{margin:4px 0 8px}#enhancers summary{font-size:13px;color:var(--gold,#f2c584);cursor:pointer}#enhancers .enhGroup{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin:4px 0}#enhancers .enhGroup b{font-size:11px;color:#a8beca;min-width:92px}#enhancers button{min-height:24px;padding:1px 8px;font-size:12px;margin:0;width:auto;border-radius:12px}#enhancers button.on{background:#3a2f17;border-color:var(--gold,#f2c584);color:#ffe2b8}#enhancers .enhNote{font-size:11px;color:#7d96a2;margin:2px 0}`;document.head.append(css);
- const box=el('details');box.id='enhancers';const sum=el('summary');sum.append(el('span','✦ Kiegészítők'),' ',el('span','','enhStyle'));const body=el('div');box.append(sum,body);
+ const box=el('details');box.id='enhancers';const sum=el('summary');sum.append(el('span','✦ Minőség és stílus'),' ',el('span','','enhStyle'));const body=el('div');box.append(sum,body);
  const anchor=$('prompt')?.closest('label');anchor?.after(box);
  function apply(field,tag,front){const f=$(field);if(!f)return;f.value=toggleTag(f.value,tag,{front});f.dispatchEvent(new Event('input',{bubbles:true}));current()[field]=f.value;edited();render();}
  function chip(field,tag,front){const b=el('button',tag);b.type='button';b.classList.toggle('on',hasTag($(field)?.value,tag));b.title=b.classList.contains('on')?'Kivétel a promptból':'Hozzáadás a prompthoz';b.onclick=()=>apply(field,tag,front);return b;}

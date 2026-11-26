@@ -1,4 +1,18 @@
-import {sizePresets,sizeProblem,nearestSize,presetLabel} from './settings.mjs';
+export function getStartPlan($,group=false){
+ const id=group?'groupStartPlan':'startPlan';
+ const existing=$(id);
+ if(existing)return existing;
+ const plan=document.createElement(group?'details':'p');
+ plan.id=id;
+ plan.className='startPlan';
+ plan.hidden=true;
+ if(group)plan.append(document.createElement('summary'),document.createElement('ul'));
+ $('start').closest('.actions').before(plan);
+ return plan;
+}
+
+import {markNew} from './new-feature-ui.mjs';
+import {availableSizePresets,sizeProblem,nearestSize,savedSizeLabel,saveSizePreset} from './settings.mjs';
 export function createWorkbench({$,current,getState,request,act,edited,capture,save,renderLoras,draw,notify,onFavorite=()=>{},samplingInfo=()=>''}){
  let loading=false;
  const mode=()=>getState().mode;
@@ -34,11 +48,11 @@ export function createWorkbench({$,current,getState,request,act,edited,capture,s
  function announceLora(row){notify('✓ Bekapcsolva · '+row.name+' · erősség '+row.strength);}
  function activateLora(name){const c=current(),item=c.catalog?.loras.find(i=>i.name===name);if(!item||status(item.family)==='incompatible'||status(item.family)==='unknown'&&!c.controls.allowUnknownLoras)throw Error('Ez a LoRA nem adható hozzá a kiválasztott modellhez.');if(c.info?.modelFields.length!==1)throw Error('Új LoRA-hoz egyértelműen egy modellbetöltő szükséges.');const existing=[...(c.controls.loras||[]),...(c.controls.addedLoras||[])].find(r=>r.name===name);if(existing){existing.on=true;delete existing.stripRemoved;announceLora(existing);return;}const field=c.info.modelFields[0];(c.controls.addedLoras||=[]).push({name,on:true,strength:.8,clip:c.source.prompt[field.node].class_type==='CheckpointLoaderSimple'&&!field.modelOnly?.8:null});announceLora(c.controls.addedLoras.at(-1));}
  function sizes(){
-  const c=current(),presets=[...sizePresets[mode()].map(([width,height])=>({width,height})),...(getState().presets?.[mode()]||[])];$('sizePreset').replaceChildren(new Option('Egyéni méret','custom'));
-  for(const [index,p]of presets.entries())$('sizePreset').add(new Option((p.name?p.name+' · ':'')+presetLabel(p.width,p.height),String(index)));
+  const c=current(),presets=availableSizePresets(mode(),getState().presets?.[mode()]);$('sizePreset').replaceChildren(new Option('Egyéni méret','custom'));
+  for(const [index,p]of presets.entries())$('sizePreset').add(new Option(savedSizeLabel(p),String(index)));
   const match=presets.findIndex(p=>p.width===c.width&&p.height===c.height);$('sizePreset').value=match<0?'custom':String(match);
   const problem=sizeProblem(c.width,c.height);$('sizeWarning').textContent=problem||presetLabel(c.width,c.height)+(c.width*c.height>1400000?' · Nagy méret: jelentős memóriaigény lehet.':'')+' A támogatott workflow méretkorlátai érvényesek; ez nem VRAM-becslés.';$('fixSize').hidden=!problem;
-  const custom=getState().presets?.[mode()]||[];$('savedSizes').replaceChildren(new Option('Saját mentett méretek…',''));for(const[index,p]of custom.entries())$('savedSizes').add(new Option(p.name+' · '+presetLabel(p.width,p.height),String(index)));
+  const custom=getState().presets?.[mode()]||[];$('savedSizes').replaceChildren(new Option('Saját mentett méretek…',''));for(const[index,p]of custom.entries())$('savedSizes').add(new Option(savedSizeLabel(p),String(index)));
  }
  function summary(){
   const c=current(),rows=[...(c.controls.loras||[]),...(c.controls.addedLoras||[])].filter(r=>r.on),values=selectValues();$('summaryContent').replaceChildren();
@@ -46,6 +60,13 @@ export function createWorkbench({$,current,getState,request,act,edited,capture,s
   const s=c.controls.sampling||c.info?.sampling||{};
   const lines=[['Modell',c.blockedModel?.name||values.map(f=>f.name).join(' · ')||'Válassz modellt.'],['Méret',presetLabel(c.width,c.height)],['Sorozat',(c.count||1)+' változat · '+(c.seed===-1?'véletlen seedek':({random:'véletlen seedek',increment:'léptetett seedek',fixed:'azonos seed'}[c.seedMode]||'azonos seed'))],['Seedek',c.seed===-1||c.seedMode==='random'?'Indításkor új véletlen seedek':c.seedMode==='fixed'?String(c.seed)+' · minden változat ugyanazt kapja':Array.from({length:Math.min(24,Math.max(1,Number(c.count)||1))},(_,i)=>String(Number(c.seed)+i*(c.seedStep??1))).join(', ')],['Mintavételezés',(s.steps??'—')+' lépés · CFG '+(s.cfg??'—')+' · '+(s.sampler||'—')+' / '+(s.scheduler||'—')],['LoRA-k',rows.length?rows.map(r=>r.name+' × '+r.strength+(r.clip===null?'':' / CLIP '+r.clip)).join('\n'):'Nincs bekapcsolt LoRA']];
   if(mode()==='video')lines.push(['Videóhossz',c.prepared&&c.preparedTiming?c.duration+' mp kérve → '+c.preparedTiming.seconds.toFixed(3)+' mp · '+c.preparedTiming.frames+' képkocka · '+c.preparedTiming.fps+' fps':c.duration+' mp kérve · tényleges hossz az előkészítés után']);
+  const startPlan=getStartPlan($),video=mode()==='video';
+  startPlan.hidden=!c.info||!!c.blockedModel||!!globalThis.creatorHubMultiModel?.isOn();
+  const model=values.map(({name})=>String(name).split(/[\\/]/).pop().replace(/\.(safetensors|ckpt|gguf|sft)$/i,'')).join(' + ')||c.sourceName||'';
+  const label=text=>Object.assign(document.createElement('span'),{textContent:text});
+  startPlan.replaceChildren(model,model?' · ':'',String(c.count||1)+' ',label(video?'videó':'kép'),' · '+c.width+' × '+c.height);
+  if(video)startPlan.append(' · '+c.duration+' ',label('mp'));
+  if(c.image&&c.useImage!==false)startPlan.append(' · ',label('Kezdőképpel'));
   let source='';try{source=samplingInfo()||'';}catch{}
   for(const[label,value]of lines){const dt=document.createElement('dt');dt.textContent=label;const dd=document.createElement('dd');dd.textContent=value;/* 0.16 DEV: honnan jön az érték – külön elemben, hogy lefordítható legyen */if(label==='Mintavételezés'&&source){dd.append('\n(');for(const [i,part] of source.split(' · ').entries()){if(i)dd.append(' · ');const m=part.match(/^(lépés|CFG): (.*)$/);for(const t of m?[m[1],': ',m[2]]:[part]){if(t===': '){dd.append(t);continue;}const e=document.createElement('span');e.textContent=t;dd.append(e);}}dd.append(')');}$('summaryContent').append(dt,dd);}
   $('summaryState').textContent=c.blockedModel?c.blockedModel.reason:c.prepared?'Ellenőrizve. Indítható.':'Indításkor automatikusan ellenőrzi és előkészíti a tervet.';
@@ -60,10 +81,34 @@ export function createWorkbench({$,current,getState,request,act,edited,capture,s
  $('addLoraSelect').onchange=()=>{loraButtons();if(!$('addLoraSelect').value||$('addLora').disabled)return;try{activateLora($('addLoraSelect').value);edited();renderLoras();loraChoices();summary();}catch(e){notify(e.message,true);}};$('showAllLoras').onchange=loraChoices;
  $('favoriteLora').onclick=()=>void act(async()=>{const item=current().catalog?.loras.find(i=>i.name===$('addLoraSelect').value);if(!item?.localId)return;await request('library/favorite',{id:item.localId,on:!item.favorite});item.favorite=!item.favorite;await onFavorite({id:item.localId,name:item.name,kind:'lora',favorite:item.favorite});loraChoices();});
  $('addLora').onclick=()=>{try{activateLora($('addLoraSelect').value);edited();renderLoras();summary();}catch(e){notify(e.message,true);}};
- $('sizePreset').onchange=()=>{if($('sizePreset').value==='custom')return;const presets=[...sizePresets[mode()].map(([width,height])=>({width,height})),...(getState().presets?.[mode()]||[])],p=presets[Number($('sizePreset').value)];if(!p)return;$('width').value=p.width;$('height').value=p.height;editAndRender();};
+ $('sizePreset').onchange=()=>{if($('sizePreset').value==='custom')return;const presets=availableSizePresets(mode(),getState().presets?.[mode()]),p=presets[Number($('sizePreset').value)];if(!p)return;$('width').value=p.width;$('height').value=p.height;editAndRender();};
  $('flipSize').onclick=()=>{[$('width').value,$('height').value]=[$('height').value,$('width').value];editAndRender();};
  $('fixSize').onclick=()=>{const p=nearestSize(Number($('width').value),Number($('height').value));$('width').value=p.width;$('height').value=p.height;editAndRender();};
- $('saveSize').onclick=()=>void act(async()=>{capture();const c=current(),name=$('sizeName').value.trim();if(!name)throw Error('Adj nevet a mentett képméretnek.');if(sizeProblem(c.width,c.height))throw Error(sizeProblem(c.width,c.height));const state=getState();state.presets||={image:[],video:[]};const rows=state.presets[mode()]||=[];if(rows.length>=40&&!rows.some(p=>p.name===name))return;const i=rows.findIndex(p=>p.name===name),p={name:name.slice(0,60),width:c.width,height:c.height};if(i<0)rows.push(p);else rows[i]=p;save();sizes();notify('Saját képméret mentve.');});
+ const sizeAdvice=$('sizeAdvice');
+ const adviceHost=document.createElement('span');sizeAdvice.before(adviceHost);
+ adviceHost.replaceWith(markNew(sizeAdvice,'size-advice'));
+ sizeAdvice.onclick=()=>void act(async()=>{
+  capture();
+  const c=current(),activeMode=mode();
+  const {openSizeAdvice}=await import('./creative-advice-ui.mjs');
+  openSizeAdvice({request,notify,prompt:c.prompt||'',mode:activeMode,current:c,
+   families:[c.catalog?.models?.find(model=>model.id===c.automatic?.id)?.family||c.info?.family],
+   image:c.useImage===false?'':c.image,
+   apply({width,height}){
+    if(mode()!==activeMode)throw Error('Az alkotási mód megváltozott. Kérj új javaslatot.');
+    $('width').value=width;$('height').value=height;editAndRender();
+   }
+  });
+ });
+ const saveCurrentSize=name=>void act(async()=>{
+  capture();
+  const {width,height}=current();
+  const preset=saveSizePreset(getState(),mode(),{width,height,name});
+  save();sizes();
+  notify('Saját képméret mentve: '+preset.name);
+ });
+ $('quickSaveSize').onclick=()=>saveCurrentSize('');
+ $('saveSize').onclick=()=>saveCurrentSize($('sizeName').value);
  $('savedSizes').onchange=()=>{const p=getState().presets?.[mode()]?.[Number($('savedSizes').value)];if(!$('savedSizes').value||!p)return;$('width').value=p.width;$('height').value=p.height;const selected=$('savedSizes').value;editAndRender();$('savedSizes').value=selected;};
  $('deleteSize').onclick=()=>{const value=$('savedSizes').value;if(value==='')return;getState().presets[mode()].splice(Number(value),1);save();sizes();};
  for(const [id,field]of [['copyPositive','prompt'],['copyNegative','negative']])$(id).onclick=()=>void act(async()=>{await navigator.clipboard.writeText($(field).value);notify('Prompt másolva.');});
@@ -72,7 +117,7 @@ export function createWorkbench({$,current,getState,request,act,edited,capture,s
   const c=current(),normalize=name=>name.replaceAll('\\','/').toLocaleLowerCase(),file=normalize(item.path),matches=names=>names.filter(n=>file.endsWith('/'+normalize(n))||normalize(n)===file);
   if(item.kind==='lora'){
    const names=matches((c.catalog?.loras||[]).map(i=>i.name));if(names.length!==1)throw Error('A LoRA nem azonosítható egyértelműen a háttér listájában. Ellenőrizd a ComfyUI modellmappáit, majd frissítsd a helyi listát.');
-   const name=names[0],info=c.catalog.loras.find(i=>i.name===name),s=status(info.family);if(s==='incompatible')throw Error('Ez a LoRA más modellcsaládhoz tartozik.');if(s==='unknown'&&!c.controls.allowUnknownLoras)throw Error('A család nem igazolható. Az Alkotás → LoRA-k → Új LoRA hozzáadása résznél külön engedheted az ismeretlen családú fájlokat.');
+   const name=names[0],info=c.catalog.loras.find(i=>i.name===name),s=status(info.family);if(s==='incompatible'){/* 0.17.1: több modelles módban „◐ Vár” állapotban felvehető */if(!window.creatorHubMultiModel?.isOn?.()||!info.family)throw Error('Ez a LoRA más modellcsaládhoz tartozik.');const existing=[...(c.controls.loras||[]),...(c.controls.addedLoras||[])].find(r=>r.name===name);if(existing){existing.on=false;existing.parked=true;delete existing.stripRemoved;}else (c.controls.addedLoras||=[]).push({name,on:false,parked:true,strength:.8,clip:null,family:info.family});return 'parked';}if(s==='unknown'&&!c.controls.allowUnknownLoras)throw Error('A család nem igazolható. Az Alkotás → LoRA-k → Új LoRA hozzáadása résznél külön engedheted az ismeretlen családú fájlokat.');
    if(c.info.modelFields.length!==1)throw Error('Új LoRA-hoz egyértelműen egy modellbetöltő szükséges.');
    activateLora(name);
   }else{

@@ -9,7 +9,7 @@ test('series view: batch progress, paused state, current model/format',()=>{
   const q={armed:true,current:'r2',entries:[{id:'e1',state:'complete',batch:b(1),done:3},{id:'e2',state:'running',runId:'r2',batch:b(2)},{id:'e3',state:'queued',batch:b(3)},{id:'x',state:'queued',title:'más'}]};
   const v=seriesView(q,{id:'r2',jobs:[{state:'complete'},{state:'running'},{state:'planned'}]});
   assert.equal(v.total,9);assert.equal(v.done,4);assert.equal(v.now,'M2 · álló');assert.deepEqual(v.ids,['e2','e3']);assert.equal(v.paused,false);
-  const p=seriesView({...q,armed:false,entries:q.entries.map(e=>e.id==='e2'?{...e,state:'paused'}:e)},null);assert.equal(p.paused,true);
+  const p=seriesView({...q,armed:false,entries:q.entries.map(e=>e.id==='e2'?{...e,state:'paused'}:e)},null);assert.equal(p,null);/* 0.17: félbemaradt kör nem foglal sávot */
   const single=seriesView({armed:true,current:'r9',entries:[{id:'s',state:'running',runId:'r9',title:'Sorozat'}]},{id:'r9',jobs:[{state:'complete'},{state:'running'}]});assert.equal(single.total,2);assert.equal(single.done,1);assert.equal(single.batch,false);
   assert.equal(seriesView({armed:false,entries:[{id:'a',state:'complete'}]},null),null);
 });
@@ -56,3 +56,28 @@ test('cancel "let the running image finish": entry closes after the run ends, th
 test('series view: plan i/N, model i/N, image k/K',()=>{const b=(i,m,f)=>({id:'batchabc1',label:'L',images:2,model:m,format:f,index:i,total:4});
  const q={armed:true,current:'r3',entries:[{id:'a',state:'complete',batch:b(0,'A','álló')},{id:'b',state:'complete',batch:b(1,'A','fekvő')},{id:'c',state:'running',runId:'r3',batch:b(2,'B','álló')},{id:'d',state:'queued',batch:b(3,'B','fekvő')}]};
  const v=seriesView(q,{id:'r3',jobs:[{state:'complete'},{state:'running'}]});assert.equal(v.planIndex,3);assert.equal(v.planTotal,4);assert.equal(v.modelIndex,2);assert.equal(v.modelTotal,2);assert.equal(v.imageNow,2);assert.equal(v.imageTotal,2);assert.equal(v.format,'álló');});
+test('comparison progress includes plans that have not entered the queue yet',()=>{
+  const batch={id:'round-12',total:9,images:2,model:'Flux',format:'fekvő'};
+  const queue={armed:true,current:'r1',entries:[{id:'first',runId:'r1',state:'running',batch}]};
+  const view=seriesView(queue,{id:'r1',jobs:[{state:'complete'},{state:'running'}]});
+  assert.equal(view.done,1);
+  assert.equal(view.total,18);
+});
+test('creative advice keeps history grounded and accepts only a valid trial count',async()=>{
+ let last;
+ const fetchImpl=async(url,options)=>{
+  const link=String(url);
+  const reply=link.endsWith('/api/tags')?{models:[{name:'local',size:1}]}:
+   link.endsWith('/api/show')?{capabilities:['completion']}:
+   {message:{content:JSON.stringify({text:'Azonos seed mellett hasonlíts össze.',count:2})}};
+  if(link.endsWith('/api/chat'))last=JSON.parse(options.body);
+  return {ok:true,status:200,text:async()=>JSON.stringify(reply)};
+ };
+ const service=createAssistantService({fetchImpl});
+ const plan=await service.request({action:'creativeAdvice',model:'local',kind:'plan',context:{count:6},question:'Kamera'});
+ assert.equal(plan.count,2);
+ assert.equal(JSON.parse(last.messages[1].content).context.count,6);
+ const history=await service.request({action:'creativeAdvice',model:'local',kind:'history',context:[{number:1,model:'LTX',loras:[{name:'Camera',strength:.5}]}]});
+ assert.equal(history.count,null);
+ assert.equal(JSON.parse(last.messages[1].content).context[0].loras[0].strength,.5);
+});

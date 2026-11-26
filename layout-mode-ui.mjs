@@ -9,7 +9,7 @@ const css=`body.layoutCompact>header{padding:3px 10px!important;min-height:0}bod
 body.layoutCompact>header nav{gap:6px}body.layoutCompact>header nav button,body.layoutCompact>header nav a{min-height:28px;padding:3px 9px;font-size:13px}
 body.layoutCompact.studioLayout main{padding-bottom:52px}
 body.layoutCompact #openResources,body.layoutCompact #openGenerationQueue,body.layoutCompact .preflightButton{display:none!important}
-body.layoutCompact .generationFooter{flex-wrap:wrap;row-gap:4px}body.layoutCompact .generationFooter .dockActiveAccessories{min-height:30px;max-height:40px;margin-left:auto;padding:2px 6px}
+body.layoutCompact .generationFooter{flex-wrap:wrap;row-gap:4px}body.layoutCompact .generationFooter .dockActiveAccessories{min-height:30px;max-height:40px;margin-left:auto;padding:2px 6px;flex:1 1 100%;min-width:0;max-width:100%;box-sizing:border-box}body.layoutCompact .generationFooter{min-width:0;max-width:100%}
 body.layoutCompact .generationFooter .dockActiveAccessories .activeModel img,body.layoutCompact .generationFooter .dockActiveAccessories .activeModelPlaceholder{width:26px;height:26px}
 body.layoutCompact .toolDock{position:fixed!important;z-index:60;left:16px;right:96px;bottom:8px;height:44px;flex:none!important;max-height:none!important;box-shadow:0 -6px 24px #000a;transition:height .18s ease}
 body.layoutCompact .toolDock.roomy:not(.collapsed){left:calc(48% + 10px);right:16px;bottom:44px;height:calc((100dvh - var(--hub-header-height,48px)) / var(--uiz,1) - 60px)}

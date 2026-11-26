@@ -1,3 +1,4 @@
+import {markNew} from './new-feature-ui.mjs';
 // 0.16 DEV — 🎞 Storyboard: jelenetek megtervezése kulcsképekkel, mielőtt videó készül.
 // Jelenetkártyák (szöveg, hossz) · közös stílus és seed (egységes kinézet) · kulcskép minden jelenethez az aktív képmodellel ·
 // változatok közül választás · „Videó ebből” → a kulcskép videó-kezdőkép lesz a jelenet szövegével; onnan a Jelenetsor viszi tovább.
@@ -82,6 +83,32 @@ export function createStoryboardUI({request,collectPlan,automatic,state,current,
         vid.onclick=()=>{d.close();void onVideo(chosen,{prompt:shotPrompt(board,shot),duration:shot.duration,project:shotVideoProject(board,i),mirror:!!shot.mirror});};
         /* 0.16 DEV: 🪄 következő jelenet az előző kulcsképből */const prevVars=i>0?images.get(i-1)||[]:[],prev=i>0?prevVars.find(e=>e.id===board.shots[i-1].keyframe)||prevVars[0]:null;const assist=el('button','🪄');assist.type='button';assist.title=prev?'Következő jelenet asszisztens: az előző jelenet kulcsképéből, folytonosság-ellenőrzéssel':'Az asszisztenshez az előző jelenetnek kulcskép kell';assist.disabled=!prev||i===0;
         assist.onclick=()=>void window.creatorHubNextScene?.open({source:prev.url,intent:shot.text,kind:'storyboard',title:'🪄 '+(i+1)+'. jelenet – folytatás',project:shotProject(board,i),onChoose:async c=>{shot.keyframe=c.entry.id;shot.mirror=!!c.mirrored;if(!shot.text.trim())shot.text=c.prompt;touch();await poll();draw();}}).catch(e=>notify(e.message,true));
+        if(prev&&chosen){
+          const review=el('button','✦ Folytonosság ellenőrzése');review.type='button';
+          review.onclick=()=>void Promise.all([import('./creative-advice-ui.mjs'),import('./next-scene-ui.mjs')]).then(([ui,media])=>{
+                        const original=shot.text;
+            ui.openCreativeAdvice({title:'Folytonosság ellenőrzése',request,notify,
+             applyText(text){
+              if(!board.shots.includes(shot)||shot.text!==original)throw Error('A jelenet időközben megváltozott.');
+              shot.text=text;touch();draw();
+             },
+             async task(model){
+              const before=await media.toDataURL(prev.url,1024,!!board.shots[i-1]?.mirror);
+              const after=await media.toDataURL(chosen.url,1024,!!shot.mirror);
+              const continuity=await request('studio/assistant',{action:'continuity',model,image:before});
+              const result=await request('studio/assistant',{action:'continuityCheck',model,sheet:continuity.sheet,image:after});
+              const labels={subject:'Szereplő',clothing:'Ruha',light:'Fény',facing:'Irány'};
+              const text=Object.entries(labels).map(([field,label])=>
+               label+' · '+(result.checks?.[field]?.ok?'✓':'⚠')+' '+(result.checks?.[field]?.note||'')).join('\n');
+              let suggestion;
+              if(original.trim()&&Object.values(result.checks||{}).some(check=>!check.ok)){
+               try{suggestion=(await request('studio/assistant',{action:'nextPrompt',model,sheet:continuity.sheet,intent:original})).prompt;}catch{}
+              }
+              return {text,suggestion};
+            }});
+          }).catch(error=>notify(error.message,true));
+          row.append(markNew(review,"storyboard-continuity"));
+        }
         if(i>0)row.append(assist);row.append(durL,img,vid);card.append(h,key,vr,text,row);
         /* 0.16 DEV: a jelenet kész videói – melyik kerüljön a kisfilmbe */
         const takes=(videos.get(i)||[]).sort((a,b)=>(b.created||0)-(a.created||0));if(takes.length){const vbox=el('div',null,'sbVideo'),pick=takes.find(t=>t.id===shot.video)||takes[0],v=el('video');v.src=pick.url;v.controls=true;v.muted=true;v.preload='metadata';v.playsInline=true;

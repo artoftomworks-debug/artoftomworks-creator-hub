@@ -23,8 +23,8 @@ export function createStartImageGuard({$,current,getState=()=>null,translate=t=>
   function tick(){place();const st=getState();if(st){track(st.image);track(st.video);}const c=current();if(!c)return;track(c);
     /* adatok nélküli (régi piszkozatból jött) kép: ismeretlen korú → régi; minden későbbi cserénél most töltődött be */const on=!!c.image&&c.useImage!==false;chip.hidden=!on;if(on&&img.src!==c.image)img.src=c.image;}
   const timer=setInterval(tick,700);setTimeout(tick,0);
-  function markUsed(){const c=current();if(!c?.image||c.useImage===false)return;c.startImageInfo={...(c.startImageInfo||{}),sig:imageSig(c.image),usedPrompt:c.prompt||'',ackAt:Date.now()};}
-  function confirm(){tick();const c=current(),why=staleReason(c);if(!why||!askEnabled())return Promise.resolve('with');
+  function markUsed(prompt){const c=current();if(!c?.image||c.useImage===false)return;c.startImageInfo={...(c.startImageInfo||{}),sig:imageSig(c.image),usedPrompt:prompt??(c.prompt||''),ackAt:Date.now()};}
+  function confirm(prompt){tick();const c=current(),why=staleReason(prompt===undefined?c:{...c,prompt});if(!why||!askEnabled())return Promise.resolve('with');
     return new Promise(resolve=>{const d=document.createElement('dialog');d.className='studioDialog startImageDialog';const h=document.createElement('h2');h.textContent='Kezdőkép van bent';
       const p=document.createElement('p');p.textContent=why==='prompt'?'A promptot azóta érdemben átírtad, de a korábbi kezdőkép maradt bent. Így akarod indítani?':'Ez a kezdőkép már régóta (egy korábbi munkamenetből) van bent. Így akarod indítani?';
       const pic=document.createElement('img');pic.src=c.image;pic.alt='';const row=document.createElement('div');row.className='inline';

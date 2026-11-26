@@ -1,12 +1,29 @@
+import {markNew} from './new-feature-ui.mjs';
 import {sourceText,translateText,getLanguage} from './i18n-ui.mjs';
 import {createAssistantUI} from './assistant-ui.mjs';
-import {redact,friendlyError} from './diagnostic-text.mjs';
+import {shareableError} from './diagnostic-text.mjs';
 const el=(tag,text,cls)=>{const e=document.createElement(tag);if(text)e.textContent=text;if(cls)e.className=cls;return e;};
 export function createStudioUI({$,request,getState,getRun,ensureBackend,selectTab,capture,setPrompt,notify,loadWorkflow,openMotion,openFinish}){
  let lastError='',errorVersion=0,tools=[],dead=false;
  const backend=()=>getState().backend;
  function dialog(title){const d=el('dialog',null,'studioDialog'),head=el('div',null,'sectionTitle'),close=el('button','Bezárás');head.append(el('h2',title),close);d.append(head);close.onclick=()=>d.close();d.addEventListener('click',e=>{if(e.target===d)d.close();});document.body.append(d);return d;}
- const errors=dialog('Hiba történt'),errorText=el('p'),errorLog=el('textarea'),copyError=el('button','Hiba másolása','primary');errors.id='studioError';errorLog.id='studioErrorLog';errorLog.readOnly=true;errorLog.rows=12;/* 0.16 DEV: emberi hibaüzenet + javító gombok; a nyers hiba és a napló a „Technikai részletek” alatt */const errorTitle=errors.querySelector('h2'),errorHint=el('p',null,'errorHint'),errorActions=el('div',null,'inline errorActions'),errorDetails=el('details'),errorSummary=el('summary','Technikai részletek (nyers hibaüzenet és napló)'),errorRaw=el('p',null,'muted');errorDetails.append(errorSummary,errorRaw,copyError,errorLog);errors.append(errorText,errorHint,errorActions,errorDetails);copyError.onclick=async()=>{try{await navigator.clipboard.writeText(errorLog.value);copyError.textContent='Kimásolva ✓';}catch{errorLog.focus();errorLog.select();copyError.textContent='Jelöld ki és másold: Ctrl+C';}};
+ const errors=dialog('Hiba történt'),errorText=el('p'),errorLog=el('textarea');
+ const copyError=el('button','Hiba másolása','primary'),explain=el('button','✦ Magyarázd el');
+ const errorTitle=errors.querySelector('h2'),errorHint=el('p',null,'errorHint');
+ const errorActions=el('div',null,'inline errorActions'),helpActions=el('div',null,'inline');
+ const errorDetails=el('details'),errorSummary=el('summary','Technikai részletek');
+ errors.id='studioError';
+ errorLog.id='studioErrorLog';
+ errorLog.readOnly=true;
+ errorLog.rows=8;
+ errorHint.setAttribute('role','status');
+ helpActions.append(copyError,markNew(explain,"error-explanation"));
+ errorDetails.append(errorSummary,errorLog);
+ const errorModel=el('p',null,'muted');errors.append(errorModel,errorText,helpActions,errorHint,errorActions,errorDetails);
+ copyError.onclick=async()=>{
+  try{await navigator.clipboard.writeText(errorLog.value);copyError.textContent='Kimásolva ✓';}
+  catch{errorDetails.open=true;errorLog.focus();errorLog.select();copyError.textContent='Jelöld ki és másold: Ctrl+C';}
+ };
  const fixes={
   free:['Memória felszabadítása',async()=>{await request('engine/free',{});notify('A ComfyUI memóriája felszabadítva. Indítsd újra a generálást.');}],
   size:['Kisebb méret választása',async()=>{errors.close();const p=document.getElementById('sizePreset');p?.scrollIntoView({behavior:'smooth',block:'center'});p?.focus();}],
@@ -14,9 +31,48 @@ export function createStudioUI({$,request,getState,getRun,ensureBackend,selectTa
   models:['Keresés a Modellek ablakban',async f=>{window.open('/?models=1&q='+encodeURIComponent(String(f.file||'').split(/[\\/]/).pop().replace(/\.[^.]+$/,'')),'_blank','noopener');}],
   nodes:['Node-frissítések megnyitása',async()=>{errors.close();const n=document.getElementById('nodeUpdateSearch');const d=n?.closest('details');if(d)d.open=true;if(n)n.scrollIntoView({behavior:'smooth',block:'center'});else notify('A Node-frissítések a Beállítások között találhatók.');}],
   preflight:['✦ Ellenőrzés megnyitása',async()=>{errors.close();const b=document.querySelector('.preflightButton');if(b){b.scrollIntoView({behavior:'smooth',block:'center'});b.click();}}]};
- async function showError(text){const key=getState().runId+':'+text;if(key===lastError||dead)return;lastError=key;const version=++errorVersion;
-  const f=friendlyError(text);errorTitle.textContent=f?f.title:'Hiba történt';errorText.textContent=f?f.text:redact(text);errorHint.hidden=true;errorRaw.textContent=redact(text);errorDetails.open=!f;
-  errorActions.replaceChildren(...(f?.actions||[]).filter(a=>fixes[a]).map(a=>{const b=el('button',fixes[a][0]);b.type='button';b.onclick=async()=>{b.disabled=true;try{await fixes[a][1](f);}catch(e){notify(e.message,true);}finally{b.disabled=false;}};return b;}));errorActions.hidden=!errorActions.children.length;copyError.textContent='Hiba másolása';const run=getRun?.(),detail=run?.jobs?.find(j=>j.error===text)?.errorInfo;errorLog.value=redact(text+(detail?'\n\n'+JSON.stringify(detail,null,2).slice(0,18000):''));if(!errors.open)errors.showModal();try{const d=await request('studio/diagnostics?'+new URLSearchParams({backend:backend()}));if(version===errorVersion)errorLog.value+='\n\n'+JSON.stringify(d,null,2);}catch(e){if(version===errorVersion)errorLog.value+='\nA szerverinformáció nem kérdezhető le: '+e.message;}}
+ function showError(text,{job}={},diagnostic){
+  const key=getState().runId+':'+(job?.shotId||'')+':'+text;
+  if(key===lastError||dead)return;
+  lastError=key;
+  const version=++errorVersion,{title,known,fix:friendly,modelLine,report,advice}=diagnostic;
+  errorTitle.textContent=title;
+  errorText.textContent=diagnostic.text;
+  errorModel.textContent=modelLine;
+  errorModel.hidden=!modelLine;
+  errorLog.value=report;
+  errorDetails.open=!known;
+  copyError.textContent='Hiba másolása';
+  errorHint.hidden=true;
+  explain.disabled=false;
+  explain.onclick=async()=>{
+   const model=$('assistantModel')?.value;
+   errorHint.hidden=false;
+   if(!model){errorHint.textContent='Válassz helyi modellt az MI-segítőben.';return;}
+   explain.disabled=true;
+   errorHint.textContent='Az MI átnézi a hibaüzenetet…';
+   try{
+    const result=await request('studio/assistant',{action:'creativeAdvice',kind:'generationError',model,context:advice});
+    if(!dead&&version===errorVersion)errorHint.textContent=result.text;
+   }catch(e){
+    if(!dead&&version===errorVersion)errorHint.textContent=shareableError(e.message);
+   }finally{if(version===errorVersion)explain.disabled=false;}
+  };
+  errorActions.replaceChildren(...(friendly?.actions||[]).filter(a=>fixes[a]).map(action=>{
+   const button=el('button',fixes[action][0]);
+   button.type='button';
+   button.onclick=async()=>{
+    button.disabled=true;
+    try{await fixes[action][1](friendly);}
+    catch(e){errorHint.hidden=false;errorHint.textContent=shareableError(e.message);}
+    finally{button.disabled=false;}
+   };
+   return button;
+  }));
+  errorActions.hidden=!errorActions.children.length;
+  if(!errors.open)errors.showModal();
+ }
+ errors.addEventListener('close',()=>{errorVersion++;});
  const safe=fn=>async()=>{try{await fn();}catch(e){notify(e.message,true);}};
  const server=dialog('Szerver és ComfyUI'),serverInfo=el('pre'),refreshServer=el('button','Állapot frissítése'),copyServer=el('button','Szerverinformáció másolása');server.id='studioServer';server.append(el('p','Itt követhető a motor kapcsolata, verziója, erőforrásai és naplója.'),refreshServer,copyServer,serverInfo);
  const refresh=async()=>{serverInfo.textContent='Állapot lekérdezése…';serverInfo.textContent=JSON.stringify(await request('studio/diagnostics?'+new URLSearchParams({backend:backend()})),null,2);};refreshServer.onclick=safe(refresh);copyServer.onclick=safe(async()=>{await navigator.clipboard.writeText(serverInfo.textContent);copyServer.textContent='Kimásolva ✓';});
@@ -47,7 +103,7 @@ export function createStudioUI({$,request,getState,getRun,ensureBackend,selectTa
  const nav=document.querySelector('header nav'),findButton=el('button','⌕ Keresés'),comfyButton=el('button','ComfyUI ↗'),serverButton=el('button','Szerver');findButton.id='studioSearchButton';comfyButton.id='studioComfyButton';serverButton.id='studioServerButton';findButton.title='Funkciókereső · Ctrl+K';findButton.onclick=openSearch;comfyButton.onclick=safe(openComfy);serverButton.onclick=safe(async()=>{server.showModal();await refresh();});nav.prepend(findButton,comfyButton,serverButton);
  const shortcut=e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if(!search.open)openSearch();}};document.addEventListener('keydown',shortcut);
  const inventory=el('details',null,'studioInventory'),inventoryHead=el('div',null,'sectionTitle'),checkInventory=el('button','Helyi készlet és motor összevetése'),inventoryRows=el('div'),inventoryNote=el('p');inventory.id='studioInventory';inventory.append(el('summary','Helyi készlet és motor · darabszámok, hiányzó tételek'));inventoryHead.append(el('h3','Mi található a gépen?'),checkInventory);inventory.append(inventoryHead,inventoryNote,inventoryRows);if($('libraryInventoryDialog')){$('libraryInventoryDialog').append(inventory);inventory.open=true;}else $('library').prepend(inventory);
- checkInventory.onclick=safe(async()=>{checkInventory.disabled=true;try{inventoryNote.textContent='A beállított könyvtárak összevetése…';const d=await request('studio/inventory?'+new URLSearchParams({backend:backend()}));inventoryRows.replaceChildren();inventoryNote.textContent=d.scope+' · '+d.roots+' aktív könyvtár · '+(d.backendAvailable?'A motor válaszol.':'A motor nem érhető el; a helyi darabszámok ettől még látszanak.');const table=el('table'),head=el('tr');for(const label of ['Típus','Helyben','Motor listája','Helyben megvan, listából hiányzik'])head.append(el('th',label));table.append(head);for(const row of d.rows.filter(r=>r.local||r.backend)){const tr=el('tr');for(const v of [row.label,row.local,row.backend??'—',row.listed===null?'Nem ellenőrizhető':row.missing.length])tr.append(el('td',String(v)));table.append(tr);if(row.missing.length){const detail=el('details'),summary=el('summary',row.label+' · '+row.missing.length+' hiányzó tétel');detail.append(summary);for(const i of row.missing){const p=el('p',i.name+' · '+i.path),open=el('button','Fájl helye');open.onclick=safe(()=>request('library/open',{id:i.id}));p.append(open);detail.append(p);}inventoryRows.append(detail);}}inventoryRows.prepend(table);}finally{checkInventory.disabled=false;}});
+ checkInventory.onclick=safe(async()=>{checkInventory.disabled=true;try{inventoryNote.textContent='A beállított könyvtárak összevetése…';const d=await request('studio/inventory?'+new URLSearchParams({backend:backend()}));inventoryRows.replaceChildren();inventoryNote.textContent=d.scope+' · '+d.roots+' aktív könyvtár · '+(d.backendAvailable?'A motor válaszol.':'A motor nem érhető el; a helyi darabszámok ettől még látszanak.');const table=el('table'),head=el('tr');for(const label of ['Típus','Helyben','ComfyUI listája','Helyben megvan, listából hiányzik'])head.append(el('th',label));table.append(head);for(const row of d.rows.filter(r=>r.local||r.backend)){const tr=el('tr');for(const v of [row.label,row.local,row.backend??'—',row.listed===null?'Nem ellenőrizhető':row.missing.length])tr.append(el('td',String(v)));table.append(tr);if(row.missing.length){const detail=el('details'),summary=el('summary',row.label+' · '+row.missing.length+' hiányzó tétel');detail.append(summary);for(const i of row.missing){const p=el('p',i.name+' · '+i.path),open=el('button','Fájl helye');open.onclick=safe(()=>request('library/open',{id:i.id}));p.append(open);detail.append(p);}inventoryRows.append(detail);}}inventoryRows.prepend(table);}finally{checkInventory.disabled=false;}});
  const helper=createAssistantUI({$,request,getState,capture,setPrompt,notify}),assistant=helper.workshop;
  const saved=el('details'),savedList=el('select'),savePrompt=el('button','Jelenlegi prompt mentése'),usePrompt=el('button','Mentett prompt alkalmazása');saved.append(el('summary','Saját promptkönyvtár'),savedList,savePrompt,usePrompt);assistant.append(saved);let promptLibrary=[];try{promptLibrary=JSON.parse(localStorage.getItem('creatorHub.promptLibrary')||'[]');}catch{}const drawPrompts=()=>savedList.replaceChildren(...promptLibrary.map((p,i)=>new Option(p.slice(0,90),String(i))));drawPrompts();savePrompt.onclick=()=>{capture();const s=getState(),p=s[s.mode].prompt;if(p&&!promptLibrary.includes(p)){promptLibrary.unshift(p);promptLibrary=promptLibrary.slice(0,200);localStorage.setItem('creatorHub.promptLibrary',JSON.stringify(promptLibrary));drawPrompts();}};usePrompt.onclick=()=>{const p=promptLibrary[Number(savedList.value)];if(p)setPrompt(p);};
  async function init(){tools=(await request('studio/tools')).items;if(openFinish)tools.unshift({id:'hub-finishing',name:'Videójavító · hang, FPS, méret, változatok',group:'video'});const list=$('toolList');list.replaceChildren();for(const [group,title]of [['image','Képműhely'],['video','Videóműhely']]){const section=el('section',null,'workshopGroup');section.append(el('h3',title));for(const tool of tools.filter(t=>t.group===group)){const b=el('button',tool.name+(tool.file?' · JSON ↓':' ↗'));b.dataset.toolId=tool.id;b.onclick=safe(async()=>{b.disabled=true;const label=b.textContent;b.textContent='Megnyitás…';try{await openTool(tool,text=>{b.textContent=text;});}finally{b.disabled=false;b.textContent=label;}});section.append(b);}list.append(section);}for(const t of getState().tools||[])if(!tools.some(d=>d.name===t.name)){try{const u=new URL(t.url);if(!['http:','https:'].includes(u.protocol))continue;const a=el('a',t.name+' ↗');a.href=u.href;a.target='_blank';a.rel='noopener';list.append(a);}catch{}}

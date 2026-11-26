@@ -27,3 +27,8 @@ test('templates: save, replace by name, keep seed only when asked, delete; missi
  saveTemplate({name:'Portré',models:['a'],formats:['square'],count:9},mem);list=loadTemplates(mem);assert.equal(list.length,2);assert.equal(list[0].name,'Portré');assert.equal(list[0].count,8);
  assert.deepEqual(applyTemplate({models:['a','x']},['a','b']),{found:['a'],missing:['x']});
  deleteTemplate('Táj',mem);assert.deepEqual(loadTemplates(mem).map(t=>t.name),['Portré']);});
+test('group formats preserve an exact 16:9 size on the 32-pixel grid',()=>{
+  const sizes=formatSizes(1536,864);
+  assert.deepEqual(sizes.landscape,{width:1536,height:864});
+  assert.deepEqual(sizes.portrait,{width:864,height:1536});
+});

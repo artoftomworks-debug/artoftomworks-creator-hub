@@ -1,4 +1,4 @@
-// 0.16 DEV — „Ne legyen csendes hiba”: az Indítás előtti tervben látszik, honnan jön a lépésszám és a CFG,
+// 0.16 DEV — „Ne legyen csendes hiba”: az Indítás előtti összefoglalóben látszik, honnan jön a lépésszám és a CFG,
 // és ha eltér attól, amit a modellhez elmentettél, a Hub szól – a tervben és indításkor is. Mindkét választ elfogadja.
 import {samplingCheck,samplingSourceLabel,mismatchText,samplingProfileKey,saveSamplingProfile,isSettled,automaticSamplingDefaults} from './sampling-policy.mjs';
 const css=`#samplingGuard{margin:10px 0 0;padding:10px 12px;border:1px solid #d9a35b;border-radius:10px;background:#2a2112;color:#ffe2b8;font-size:14px;line-height:1.45}
@@ -28,7 +28,7 @@ export function createSamplingGuard({$,current,getState,model,edited,draw,onTria
     const n=Math.max(1,Number(c.count)||1),dot=()=>' · ',parts=[];const add=(...x)=>{if(parts.length)parts.push(dot());parts.push(...x);};
     if(name)add(name);if(c.width&&c.height)add(c.width+'×'+c.height);const video=getState().mode==='video';add(span(n>1?n+(video?' videó':' változat'):(video?'1 videó':'1 kép')));
     if(s.steps!==undefined)add(span(s.steps+' lépés'),...(label?[' (',...sourceNodes(label),')']:[]));if(s.cfg!==undefined)add('CFG '+s.cfg);
-    const ms=info?.result?.mismatches||[];line.classList.toggle('warn',!!ms.length);line.title=ms.length?'Kattints: melyik értékkel fusson?':'Az indítás előtti terv röviden. A teljes terv a Részletek fülön látható.';
+    const ms=info?.result?.mismatches||[];line.classList.toggle('warn',!!ms.length);line.title=ms.length?'Kattints: melyik értékkel fusson?':'Az indítás előtti beállítások röviden.';
     const b=document.createElement('b');b.append(frag(parts));line.replaceChildren(ms.length?'⚠ ':span('Terv:'),' ',b);if(ms.length)line.append(' – ',span('eltér a mentettől, kattints a választáshoz.'));
     /* 0.16 DEV: új (még ki nem próbált) modell – csendes jelzés, Próbasor csak kérésre */
     if(onTrial&&info?.m&&c.automatic&&c.modelSamplingPolicy!=='manual'){const key=info.key,prof=getState().modelSamplingProfiles?.[key];if(!isSettled(prof,automaticSamplingDefaults(info.m))){const h=document.createElement('span');h.className='trialHint';const go=document.createElement('button');go.type='button';go.textContent='▦ Próbasor';go.title='Néhány kép ugyanazzal a prompttal és seeddel, különböző lépésszámmal – te választod ki a legjobbat, és az lesz a modell beállítása';go.onclick=ev=>{ev.stopPropagation();onTrial(c.automatic.id);};const no=document.createElement('button');no.type='button';no.textContent='×';no.title='Elrejtés ennél a modellnél (a beállítás marad)';no.onclick=ev=>{ev.stopPropagation();saveSamplingProfile(getState(),key,c.controls.sampling,c.controls,{dismissed:true});edited();};h.append(' · ',span('Új modell – a beállítás csak javaslat'),go,no);line.append(h);}}

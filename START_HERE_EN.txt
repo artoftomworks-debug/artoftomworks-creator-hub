@@ -1,13 +1,5 @@
-ARTOFTOMWORKS CREATOR HUB GLOBAL 0.17.0
+Extract the entire Windows ZIP. Double-click **START_CREATOR_HUB.cmd** in the extracted application folder and point the Hub at your ComfyUI installation. The Windows ZIP includes Node.js. The GitHub source snapshot requires Node.js 22 or later on PATH. Models, LoRAs, ComfyUI and Ollama are separate. Text-based local advice requires an available Ollama model. Image-based review requires a vision-capable model. Prompt-based tags also work without Ollama.
 
-Extract the entire Windows ZIP. Run START_CREATOR_HUB.cmd.
-It then runs in the background (tray icon next to the clock). Existing ComfyUI, Python environment,
-models and required nodes are needed. SwarmUI is not required.
-Choose the interface language with the globe selector.
+A fresh install has no private drafts, history, profiles, saved credentials or queued jobs. To keep an existing installation, extract the release into a new folder first and make a backup before migrating data. Do not push the data folder that the Hub creates while running.
 
-First try: Image, one ready supported model, count 1, a modest size.
-For full instructions, output paths and limitations: README_EN.txt.
-Free creative use, including commercial output: see LICENSE.txt.
-
-SAMPLER, SCHEDULER AND UPDATING
-See UPDATE_EN.txt for independent override switches, model settings and safe updating.
+The companion archive contains example LTX and Krea workflows. Check their model and node requirements before running them.

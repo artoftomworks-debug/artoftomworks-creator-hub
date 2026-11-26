@@ -1,6 +1,6 @@
 {
   "name": "artoftomworks-creator-hub",
-  "version": "0.17.0",
+  "version": "0.17.1",
   "private": true,
   "type": "module",
   "description": "Local image and video workspace powered by ComfyUI",

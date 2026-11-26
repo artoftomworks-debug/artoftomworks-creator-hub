@@ -10,7 +10,7 @@ const KNOWN_MODELS=[
  // 0.16 DEV: Stable Yogi „Realism … Moss” is a distilled finetune – 4–6 steps are enough (user-tested); the generic Moss default stays 50.
  {family:'moss',match:/stable[ _-]?yogi|realism[ _-]?by/i,values:{steps:6},label:'Moss · Stable Yogi Realism'},
 ];
-export function modelText(model={}){return [model.title,model.name,model.id].filter(v=>typeof v==='string').join(' ');}
+export function modelText(model={}){return [model.title,model.name,model.id,model.catalogTitle].filter(v=>typeof v==='string').join(' ');}
 export function knownModelProfile(model={}){const text=modelText(model);return KNOWN_MODELS.find(k=>k.family===model.family&&k.match.test(text))||null;}
 // 0.16 DEV: csendes, fájlnév alapú javaslat ismeretlen modellekhez – „8steps”, „turbo”, „lightning”, „hyper”, „lcm”, „schnell”…
 // Csak kiinduló érték: a ▦ Próbasorral ellenőrizhető, a felhasználó választása mindig felülírja.
@@ -20,6 +20,12 @@ export function nameHints(model={}){const t=modelText(model).toLowerCase(),out={
   else if(/schnell/.test(t)){out.steps??=4;}
   else if(/turbo|lightning|hyper|dmd2?\b|distill/.test(t)){out.steps??=8;if(lowCfg)out.cfg=2;}
   return out;}
+export function stepAdviceChoices(model,current){
+ if(!Number.isInteger(current)||current<1)return [];
+ const recommended=automaticSamplingDefaults(model).steps;
+ const alternate=Math.min(1000,Math.round(recommended*1.5));
+ return [...new Set([current,recommended,alternate])].sort((a,b)=>a-b);
+}
 export function automaticSamplingDefaults(model){const family=model.family,known=knownModelProfile(model);return {steps:family==='moss'?50:20,cfg:['moss','h3','ltx','flux1','krea2'].includes(family)?1:7,sampler:'euler',scheduler:['h3','moss','ltx'].includes(family)?'simple':'normal',denoise:1,guidance:3.5,...(known?null:nameHints(model)),...(known?.values||{})};}
 // Próbasor: néhány lépésszám ugyanazzal a seeddel. Desztillált (gyors) modellnél sűrűbben a kis értékek körül.
 export function trialSteps(base){const d=Math.max(1,Math.round(Number(base)||20));const list=d<=12?[Math.max(2,Math.round(d/2)),d,Math.round(d*1.5),d*2]:[Math.round(d/2),d,Math.round(d*1.5)];return [...new Set(list.map(v=>Math.max(1,Math.min(150,v))))].sort((a,b)=>a-b);}

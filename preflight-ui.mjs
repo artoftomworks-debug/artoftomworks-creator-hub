@@ -1,15 +1,16 @@
+import {markNew} from './new-feature-ui.mjs';
 // 0.16 DEV — „✦ Ellenőrzés” gomb a generálás sávjában: indítás előtt jelzi, ami biztosan nem stimmel, javítás gombbal.
-import {preflight} from './preflight.mjs';
+import {checkablePlan,preflight} from './preflight.mjs';
 
 const sizes=new Map();
-async function imageSize(src){
+export async function imageSize(src){
   if(!src)return null;const key=src.length>200?src.slice(0,80)+src.length+src.slice(-80):src;
   if(sizes.has(key))return sizes.get(key);
   const img=new Image();img.src=src;try{await img.decode();}catch{return null;}
   const v={width:img.naturalWidth,height:img.naturalHeight};sizes.set(key,v);if(sizes.size>20)sizes.delete(sizes.keys().next().value);return v;
 }
 const sp=t=>{const e=document.createElement('span');e.textContent=t;return e;};
-export function createPreflightUI({$,current,mode,model,isBusy=()=>false}){
+export function createPreflightUI({$,current,mode,model,isBusy=()=>false,stepSource,onStepAdvice,onPlanAdvice}){
   const anchor=$('message');if(!anchor)return {refresh(){}};
   const box=document.createElement('span');box.className='preflight';
   const btn=document.createElement('button');btn.type='button';btn.className='preflightButton';btn.title='Indítás előtti ellenőrzés: méret, tájolás, lépésszám, hossz';
@@ -38,18 +39,34 @@ export function createPreflightUI({$,current,mode,model,isBusy=()=>false}){
   function set(key,value){const el=$(key);if(!el)return;el.value=String(value);el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));}
   function drawPanel(){
     panel.replaceChildren();
-    const head=document.createElement('strong');head.textContent=items.length?'✦ MI-ellenőrzés':'✦ MI-ellenőrzés · minden rendben';panel.append(head);
+    const head=document.createElement('strong');head.textContent=items.length?'✦ Ellenőrzés':'✦ Ellenőrzés ✓';panel.append(head);
     if(!items.length){const p=document.createElement('p');p.className='muted';p.style.margin='0';p.textContent='A méret, a tájolás, a lépésszám és a hossz illik a modellhez és a kezdőképhez.';panel.append(p);}
     for(const it of items){const d=document.createElement('div');d.className='preflightItem '+it.level;d.append(it.level==='warn'?'⚠ ':'ℹ ',sp(it.text));
       if(it.fix){const b=document.createElement('button');b.type='button';b.append(sp('Javítás:'),' ',sp(it.fix.label));b.onclick=()=>{if(isBusy())return;for(const [k,v] of Object.entries(it.fix.patch))set(k,v);setTimeout(()=>{void refresh(true);},250);};d.append(document.createElement('br'),b);}
       panel.append(d);}
+    const c=current();
+    if(mode()==='video'&&onStepAdvice&&c.automatic&&c.info?.samplingFields?.some(field=>field.control==='steps')){
+      const row=document.createElement('div');
+      const steps=c.controls?.sampling?.steps;
+      const source=stepSource?.();
+      row.append(sp('Lépésszám'),' · '+steps,' · ',sp(source||''));
+      const ai=document.createElement('button');ai.type='button';ai.textContent='✦ Videós lépésszám ajánlása';
+      ai.onclick=()=>{if(isBusy())return;panel.hidden=true;onStepAdvice();};
+      row.append(document.createElement('br'),markNew(ai,"video-steps"));panel.append(row);
+    }
+    if(onPlanAdvice){
+      const advisory=document.createElement('button');advisory.type='button';advisory.textContent='✦ Terv átnézése MI-vel';
+      advisory.onclick=()=>{if(!isBusy()){panel.hidden=true;onPlanAdvice();}};
+      panel.append(markNew(advisory,"single-plan"));
+    }
     panel.append(healBox);void healRender();
     if(!panel.hidden)place();
   }
   async function refresh(force=false){
-    const c=current(),m=model?.()||null,steps=Number(c.controls?.sampling?.steps??$('steps')?.value);
+    const c=current(),m=model?.()||null;
     const useImage=c.useImage!==false&&!!c.image,img=useImage?await imageSize(c.image):null;
-    const plan={mode:mode(),width:Number(c.width),height:Number(c.height),duration:Number(c.duration),steps:Number.isFinite(steps)?steps:undefined,prompt:c.prompt||'',image:img,model:m?{family:m.family,name:m.name,id:m.id,title:m.title}:null};
+    const sampling={...c.controls?.sampling,steps:c.controls?.sampling?.steps??$('steps')?.value};
+    const plan=checkablePlan({mode:mode(),width:c.width,height:c.height,duration:c.duration,prompt:c.prompt||'',sampling,image:img,model:m});
     const s=JSON.stringify(plan);if(!force&&s===sig)return;sig=s;items=preflight(plan);
     const warn=items.filter(i=>i.level==='warn').length;
     btn.textContent=items.length?`✦ Ellenőrzés · ${warn?'⚠ '+warn:''}${warn&&items.length>warn?' · ':''}${items.length>warn?'ℹ '+(items.length-warn):''}`:'✦ Ellenőrzés ✓';

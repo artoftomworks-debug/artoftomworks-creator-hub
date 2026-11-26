@@ -7,7 +7,7 @@ import {refreshFrame,chainText} from './chain-refresh.mjs';
 export function createSceneUI({request,getEntry,onApply,onShow,isBusy,notify,ensureBackend=async()=>{}}) {
  const t=key=>sceneText(getLanguage(),key),el=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;};
  let sequence=null,anchor='',lastEntry='',loading=false,revision=0,dialog=null,dead=false;
- const button=el('button',undefined,'primary');button.id='sceneContinue';button.type='button';button.dataset.i18nIgnore='';document.querySelector('.videoActionButtons')?.prepend(button);
+ const button=el('button',undefined,'primary');button.id='sceneContinue';button.type='button';button.dataset.i18nIgnore='';const resultActions=document.getElementById('resultContinueActions');(resultActions||document.querySelector('.videoActionButtons'))?.prepend(button);button.hidden=true;
  const board=el('section',undefined,'sceneBoard');board.id='sceneBoard';board.dataset.i18nIgnore='';board.hidden=true;
  const head=el('div',undefined,'sceneHeading'),title=el('strong'),assemble=el('button'),strip=el('div',undefined,'sceneStrip'),notice=el('p',undefined,'muted');assemble.type='button';assemble.id='sceneAssemble';/* 0.16 DEV: collapsible scene sequence; the choice is remembered in this browser */const fold=el('button',undefined,'sceneFold');fold.type='button';fold.id='sceneFold';let folded=false;try{folded=localStorage.getItem('creatorHub.sceneFolded')==='1';}catch{}fold.onclick=()=>{folded=!folded;try{localStorage.setItem('creatorHub.sceneFolded',folded?'1':'0');}catch{}render();};const tools=el('span',undefined,'sceneHeadTools');tools.append(assemble,fold);head.append(title,tools);board.append(head,notice,strip);document.querySelector('#videoActions')?.after(board);
  button.onclick=()=>void open(getEntry());
@@ -52,5 +52,5 @@ export function createSceneUI({request,getEntry,onApply,onShow,isBusy,notify,ens
  }
  assemble.onclick=()=>{if(!sequence?.parts.length||assemble.disabled)return;const id=sequence.parts.at(-1).selected;window.open('/video-studio?lang='+getLanguage()+'&sequence='+encodeURIComponent(id),'_blank','noopener');};
  const language=()=>render();window.addEventListener('creator-hub-language',language);render();
- return {update(){const e=getEntry();if(e?.id&&e.id!==lastEntry){lastEntry=e.id;void refresh(e.id);}button.disabled=loading||!!isBusy();for(const b of strip.querySelectorAll('article>button'))b.disabled=loading||!!isBusy();},open,refresh(){if(anchor)void refresh(anchor);},destroy(){dead=true;revision++;dialog?.close();button.remove();board.remove();window.removeEventListener('creator-hub-language',language);}};
+ return {update(){const e=getEntry();button.hidden=!e?.id;if(e?.id&&e.id!==lastEntry){lastEntry=e.id;void refresh(e.id);}button.disabled=loading||!!isBusy();for(const b of strip.querySelectorAll('article>button'))b.disabled=loading||!!isBusy();},open,refresh(){if(anchor)void refresh(anchor);},destroy(){dead=true;revision++;dialog?.close();button.remove();board.remove();window.removeEventListener('creator-hub-language',language);}};
 }

@@ -16,3 +16,9 @@ test('migration of the current plan: DaSiWa with 20 steps becomes 8 once, with a
  assert.equal(migrateSampling(c,dasiwa),true);assert.equal(c.controls.sampling.steps,8);assert.match(c.samplingPolicyNotice,/20 → 8/);assert.equal(migrateSampling(c,dasiwa),false);});
 test('manual policy is never changed',()=>{const c={modelSamplingVersion:2,modelSamplingPolicy:'manual',controls:{sampling:{steps:20}}};assert.equal(migrateSampling(c,dasiwa),false);assert.equal(c.controls.sampling.steps,20);});
 test('LTX keeps 20 steps',()=>{assert.equal(automaticSamplingDefaults(ltx).steps,20);});
+test('an LTX 2.5 distilled catalog title supplies the 8-step baseline',async()=>{
+ const {automaticSamplingDefaults,stepAdviceChoices}=await import('../sampling-policy.mjs');
+ const model={name:'ltx25FP8Comfyui_v10.safetensors',family:'ltx',catalogTitle:'LTX 2.5 22B Distilled'};
+ assert.equal(automaticSamplingDefaults(model).steps,8);
+ assert.deepEqual(stepAdviceChoices(model,20),[8,12,20]);
+});

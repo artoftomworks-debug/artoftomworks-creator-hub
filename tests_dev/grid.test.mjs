@@ -19,3 +19,15 @@ test('rating filter: favourites, at least 3, at least 4; hidden cells keep the s
  const f=filterTab(t,'r4');assert.equal(f.rows.length,1);assert.deepEqual(f.rows[0].cells,[null,b]);assert.equal(filterTab(t,'all'),t);
  const u=filterTab({structured:false,seeds:[],rows:[{model:'A',cells:[a,b,c]}]},'r3');assert.deepEqual(u.rows[0].cells,[b,c]);});
 test('rating keys: 1–5 rate, 0 clears, others ignored',()=>{assert.equal(ratingKey('4'),4);assert.equal(ratingKey('0'),0);assert.equal(ratingKey('6'),null);assert.equal(ratingKey('f'),null);});
+
+test('history grid packs remaining images while comparison keeps seed alignment',()=>{
+ const first=it('A',1,512,512),last=it('A',3,512,512),middle=it('B',2,512,512);
+ const items=[first,middle,last];
+ const [history]=arrangeGrid(items,{compact:true});
+ assert.equal(history.structured,false);
+ assert.deepEqual(history.rows.map(row=>row.cells),[[first,last],[middle]]);
+ const [comparison]=arrangeGrid(items);
+ assert.deepEqual(comparison.rows[0].cells,[first,null,last]);
+ const [filtered]=arrangeGrid([{...first,rating:2},{...last,rating:5},middle],{compact:true});
+ assert.deepEqual(filterTab(filtered,'r4').rows[0].cells.map(entry=>entry.id),[last.id]);
+});

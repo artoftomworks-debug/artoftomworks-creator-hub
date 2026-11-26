@@ -36,3 +36,131 @@
 #startFeedback:empty{display:none}#startFeedback{flex-basis:100%;font-size:15px;max-width:100%;overflow-wrap:anywhere}.trashImage{border-color:#af7474!important}
 
 .historyPager{flex-wrap:wrap;gap:8px}.historyPageJump{display:flex;align-items:center;gap:8px}.historyPageJump label{margin:0}.historyPageJump input{width:76px;margin:0;padding:7px;font-variant-numeric:tabular-nums}.historyPageJump span{white-space:nowrap}.historyPager button{padding:8px 12px}.historyPager #historyPage{min-width:24px}
+
+
+/* 0.17: a kör képei – gomb és felugró ablak */
+.roundButton{display:inline-flex;align-items:center;gap:4px;margin:4px 0;font-weight:600}
+.roundDialog{width:min(1200px,94vw);max-height:90vh}
+.roundDialog .roundBody{overflow:auto;max-height:70vh;display:flex;flex-direction:column;gap:12px}
+.roundDialog .roundRow h3{margin:0 0 6px;font-size:14px;opacity:.85}
+.roundDialog .roundThumbs{display:flex;flex-wrap:wrap;gap:8px}
+.roundDialog .roundThumbs .historyThumb{width:180px;height:auto}
+.roundDialog .roundThumbs img{width:180px;height:auto;max-height:240px;object-fit:contain}
+
+/* 0.17: hiányzók összesítése a Hiányzók folytatása gomb mellett */
+.missingInfo{align-self:center;font-size:12px;white-space:nowrap}.missingInfo[hidden],#dropMissing[hidden]{display:none!important}
+
+/* 0.17.1: „Megnyitom” gomb az üzenetekben */
+.goToLink{min-height:24px;padding:0 8px;font-size:12px;margin-left:4px}
+/* 0.17.1: a régi „Csak ellenőrzés / workflow mentése” rész rejtve – az Ellenőrzés és a Továbbiak ▾ menü már tudja */
+.advancedPrepare{display:none!important}
+#stop[hidden],#stopAfter[hidden]{display:none!important}
+/* 0.17.1: több modelles kör alatt a sorozatsáv a vezérlő – ne legyen két leállító gombsor */
+body:has(.seriesBar:not([hidden])) #stop,body:has(.seriesBar:not([hidden])) #stopAfter{display:none!important}
+/* 0.17.1: gyors értékelés a kész kép fölött; a régi mini-előzmények és a külön összehasonlítás rejtve (az Előzményekben és a rácsban megvan) */
+.quickRate{display:inline-flex;gap:4px;align-items:center;flex-wrap:wrap;margin:2px 0 4px}.quickRate[hidden]{display:none}.quickRate button{min-height:26px;min-width:30px;padding:0 8px;font-size:13px}.quickRate button.on{border-color:var(--gold,#f2c584);color:var(--gold,#f2c584)}.quickRate button.trash{margin-left:8px}
+#resultDetails,#compareResults{display:none!important}
+/* 0.17.1: ✦ MI-címkék */
+.aiTagChips{display:inline-flex;flex-wrap:wrap;gap:4px;align-items:center}.aiTag{display:inline-flex;align-items:center;border:1px solid #3d6170;border-radius:999px;background:#0f2a35;color:#bfe3f0;font-size:12px;line-height:1;overflow:hidden}
+.aiTag button{min-height:22px;border:0;background:transparent;color:inherit;padding:2px 7px;font-size:12px}.aiTag .aiTagX{padding:2px 6px 2px 2px;opacity:.7}.aiTag .aiTagX:hover{opacity:1;color:#ffb3ac}
+.aiTag.aiLevel{padding:3px 8px;border-color:#6b5a3a;color:#f2d3a0;background:#2a2214}.aiTag.aiLevel.mature,.aiTag.aiLevel.x{border-color:#8a4a44;color:#ffc2bb;background:#2c1614}
+.aiTagPanel{margin:6px 0;font-size:13px}.aiTagPanel summary{cursor:pointer;color:var(--gold,#f2c584)}.aiTagPanel .aiTagState{color:#9fb6c1;font-weight:400}.aiTagBody{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:8px 2px}.aiTagBody label.check{display:inline-flex!important;flex-direction:row!important;align-items:center;gap:6px;margin:0}.aiTagBody label.check input{width:auto;margin:0}.aiTagBody select{min-height:30px;width:auto;max-width:320px}.aiTagNote{flex-basis:100%;margin:0}
+/* 0.17.1: görgetős Előzmények */
+.historySentinel{min-height:24px;text-align:center;color:#8fa9b5;font-size:12px;padding:10px 0}.historySentinel[hidden]{display:none}
+#historyToTop{position:fixed;right:18px;bottom:64px;z-index:60;min-height:34px;padding:0 12px;border-radius:999px;box-shadow:0 6px 18px #0008}#historyToTop[hidden]{display:none}
+#historyListMode{min-height:28px;width:auto;margin-left:10px;font-size:12px}.historyPager[hidden]{display:none!important}
+/* 0.17.1: a fejléc lenyíló menüi (⚙, Keresés) a laptopos (kompakt) nézet lebegő eszközpanele (z-index 60) fölött nyíljanak */
+body>header{z-index:70}
+.hubGearPanel{max-height:calc(100dvh - 70px);overflow:auto}
+/* 0.17.1: „◐ Vár” – bekapcsolt, de más családhoz tartozó LoRA */
+.activeLora.parkedLora{border-style:dashed!important;opacity:.92}.activeLora.parkedLora .loraToggle{color:#ffd99a!important;background:#3a2f1c!important;border-color:#d8b06c!important}.activeLora.parkedLora::before{background:#e8c07a!important}.loraWaitingCount{color:#ffd99a;font-weight:700}
+.multiLoraOpen{flex:none;font-size:12px!important;min-height:26px!important;padding:2px 9px!important;background:#2c3b25;border-color:#a8d08a;color:#e4f6d4}
+.multiLoraDialog .mlNote{font-size:13px;color:#cfdde3}.multiLoraDialog .mlGroup{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:10px 0}.multiLoraDialog h3{margin:0 0 4px;font-size:15px;color:#ffe2aa}.multiLoraDialog .mlModels{font-size:12px;color:#b9c9d0;margin:0 0 6px;overflow-wrap:anywhere}.multiLoraDialog .mlEmpty{font-size:12px;color:#e8b88f;margin:2px 0}.multiLoraDialog .mlLora{display:flex;align-items:center;gap:9px;margin:4px 0;font-size:13px}.multiLoraDialog .mlLora span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.multiLoraDialog .mlLora input[type=number]{width:72px}
+mark.promptHit{background:#ffd27a;color:#1b1407;border-radius:3px;padding:0 2px}
+.historyWordsLabel{grid-column:span 2}.historyWordsLabel input[type=search]{width:100%}.historyWordsNeg{display:inline-flex;gap:5px;font-size:12px;margin-top:3px}
+/* 0.17.1: LoRA-k ebben a körben (csoportos generálás) */
+.mlBlock{margin:12px 0;padding:10px 12px;border:1px solid #cda467;border-radius:10px;background:#2a241a}.mlBlock>h3{margin:0 0 6px;font-size:15px;color:#ffe2aa}
+.mlBlock .mlGroup{padding:6px 0;border-top:1px solid #4b5a62}.mlBlock .mlGroup:first-of-type{border-top:0}.mlBlock .mlHead{font-size:13px;margin-bottom:4px}.mlBlock .mlModels{color:#b9c9d0;font-size:12px}
+.mlBlock .mlLine{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.mlBlock .mlChip{display:inline-flex;align-items:center;gap:6px;padding:3px 6px;border:1px solid #6d7f88;border-radius:8px;background:#1b2b33;font-size:13px;margin:0}.mlBlock .mlChip.on{border-color:#e4bb7d;background:#3b2f1f}
+.mlBlock .mlChip span{max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mlBlock .mlChip input[type=number]{width:62px;padding:2px 4px;margin:0}.mlBlock .mlRemove{min-height:24px!important;padding:0 7px!important}
+.mlBlock .mlAdd{min-height:28px;font-size:13px}.mlBlock .mlEmpty{font-size:12px;color:#e8b88f}.mlBlock .mlPicker{display:flex;flex-direction:column;gap:4px;min-width:280px;flex:1}.mlBlock .mlResults{display:flex;flex-wrap:wrap;gap:4px;max-height:150px;overflow:auto}.mlBlock .mlHit{font-size:12px;min-height:26px;padding:2px 8px}
+.mmLoraSum{color:#ffd99a}.mmLoraAsk{font-size:14px}
+/* 0.17.1: ▶ Most fut */
+.nowRunning{margin:4px 0 0;padding:4px 10px;border:1px solid #6fbf8a;border-left:5px solid #9ff0b8;border-radius:8px;background:#163225;color:#dff8e6;font-size:13px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.nowRunning strong{color:#b8f5ca;margin-right:2px}
+.activeLora.runningLora{border-color:#8fe0a6!important;background:#1f4430!important;border-style:solid!important}.activeLora.runningLora .loraToggle{display:none}.runBadge{flex:none;padding:2px 8px;border-radius:6px;background:#2f6b45;color:#eafff0;font-weight:750;font-size:12px}
+/* 0.17.1: ♛ Remekmű */
+.crownBtn{font-size:16px}.crownBtn.on{color:#1b1407!important;background:#f2c584!important;border-color:#ffe2aa!important}.crownMark{color:#f2c584}
+/* 0.17.1: ✦ LoRA-ajánlás */
+.loraSuggestDialog .lsList{display:flex;flex-direction:column;gap:10px}.loraSuggestDialog .lsCard{border:1px solid #cda467;border-radius:10px;padding:10px 12px;background:#2a241a}.loraSuggestDialog .lsReason{color:#ffd99a;margin:4px 0}.loraSuggestDialog .lsFacts{font-size:12px;color:#c9d6dc;margin:4px 0}.loraSuggestDialog .lsRow{display:flex;flex-wrap:wrap;gap:6px}
+#openLoraSuggest{white-space:nowrap}
+/* 0.17.1: ■ mindig látható leállító sáv */
+.stopDock{position:fixed;left:50%;top:8px;transform:translateX(-50%);z-index:90;display:flex;align-items:center;gap:8px;padding:5px 6px 5px 14px;border:2px solid #f0a05a;border-radius:12px;background:#2b1a10f5;box-shadow:0 6px 22px #000a;max-width:min(640px,70vw)}
+.stopDock[hidden]{display:none!important}.stopDock .sdLabel{color:#ffe2c4;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}.stopDock .sdLabel strong{color:#ffd27a}
+.stopDock button{flex:none;font-weight:750;min-height:34px;padding:3px 12px;border-radius:9px;font-size:14px}.stopDock .sdAfter{background:#3c3420;border-color:#e8c07a;color:#ffe9bd}.stopDock .sdNow{background:#a8321f;border-color:#ff8a70;color:#fff}.stopDock .sdNow:hover{background:#c43b24}
+
+.stopDock.inHeader{position:static;transform:none;margin:0 auto;box-shadow:none;max-width:none;flex:0 1 auto;min-width:0}
+.startPlan {
+  margin: .6rem 0 .45rem;
+  padding: .5rem .75rem;
+  border-inline-start: 2px solid var(--gold, #f2c584);
+  background: rgba(127, 127, 127, .08);
+  font-size: .9rem;
+  overflow-wrap: anywhere;
+}
+.startPlan[hidden] { display: none; }
+.startPlan summary { cursor: pointer; }
+.startPlan ul { margin: .45rem 0 0; padding-inline-start: 1.25rem; }
+.startPlan strong { color: var(--gold, #f2c584); }
+.resultContinueActions { display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; }
+.resultContinueActions:has(> :not([hidden])) { margin-block: .35rem; }
+.resultContinueActions > [hidden] { display: none; }
+.groupCreationOpen main > :not(.groupCreationPage) { display: none !important; }
+.studioLayout main > .groupCreationPage { width: min(100%, 80rem); margin: 0 auto; max-height: none; min-width: 0; }
+.groupCreationColumns {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(18rem, 2fr);
+  align-items: start;
+  gap: .75rem;
+}
+.groupCreationColumns:has(> :only-child) { grid-template-columns: minmax(0, 1fr); }
+.groupCreationPage .mmList, .groupCreationLoras {
+  max-height: min(49vh, 34rem);
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+.groupCreationLoras { scroll-margin-top: calc(var(--hub-header-height, 66px) + 12px); }
+.groupCreationLoras .mlBlock { margin-top: 0; }
+.groupCreationLoras .mlModels { overflow-wrap: anywhere; }
+.groupCreationPage .groupLoraJump { display: none; }
+@media (max-width: 850px) {
+  .groupCreationColumns { grid-template-columns: minmax(0, 1fr); }
+  .groupCreationPage .groupLoraJump { display: inline-block; }
+}
+.groupCreationPage .mmModelTools select { width: auto; max-width: 100%; }
+.groupCreationPage > .mmSummary { margin-top: 1rem; }
+.studioLayout.groupCreationOpen { overflow-y: auto; }
+.studioLayout.groupCreationOpen main { height: auto; min-height: calc(100dvh - var(--hub-header-height, 66px)); }
+.groupCreationFooter { position: sticky; bottom: 0; z-index: 2; padding: .4rem 0; background: var(--panel, #132630); }
+.groupPromptFields { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: .55rem .75rem; margin-block: .75rem; }
+.groupPromptFields textarea { width: 100%; resize: vertical; }
+.groupPromptFields > button { justify-self: start; }
+@media (max-width: 700px) { .groupPromptFields { grid-template-columns: minmax(0, 1fr); } }
+.groupCreationHeading { display: flex; gap: .7rem; align-items: center; flex-wrap: wrap; }
+.groupCreationBadge { padding: .3rem .65rem; border: 1px solid var(--gold, #f2c584); border-radius: .5rem; color: var(--gold, #f2c584); font-weight: 700; }
+.groupCreationPage .sizeControls { margin-top: .75rem; }
+.groupCreationPage .mmPlanError { color: #ffc0a2; overflow-wrap: anywhere; }
+.groupCreationPage .mmPlanError:empty { display: none; }
+.previewRoundProgress { display: none; }
+#monitor.expanded .previewRoundProgress:not([hidden]) {
+  display: block;
+  margin: .25rem 0 .45rem;
+  padding: .4rem .65rem;
+  border-inline-start: 2px solid var(--gold, #f2c584);
+  background: var(--panel, #132630);
+  font-variant-numeric: tabular-nums;
+}
+.activeLoraSuggest { flex: none; white-space: nowrap; }
+
+.featureNewGroup{display:inline-flex;align-items:center;gap:4px;max-width:100%;vertical-align:middle}
+button.featureNewBadge{flex:none;width:auto;min-height:24px;padding:1px 6px;margin-inline-start:4px;border:1px solid var(--gold,#f2c584);border-radius:6px;color:var(--gold,#f2c584);font-size:12px;line-height:1.2;white-space:nowrap}
+button.featureNewBadge[hidden]{display:none!important}
